@@ -1,6 +1,6 @@
 # main.py
 # The main entry point for the TherapistAI bot application.
-#Implementing features here and this is the main file.
+
 import prompts
 import llm_service
 import voice_service
