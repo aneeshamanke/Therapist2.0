@@ -1,63 +1,91 @@
 {
     "anxiety": [
         {
-            "role": "user",
             "parts": [
                 "hi"
-            ]
+            ],
+            "role": "user"
         },
         {
-            "role": "model",
             "parts": [
                 "Hi there.  It takes courage to reach out and talk about what's on your mind, and I appreciate you sharing this time with me.  What's been on your heart today?\n"
-            ]
+            ],
+            "role": "model"
         },
         {
-            "role": "user",
             "parts": [
                 "hi i am on my periods and its been soo annoying"
-            ]
+            ],
+            "role": "user"
         },
         {
-            "role": "model",
             "parts": [
                 "I hear you saying that your period is causing you significant annoyance right now.  That sounds really frustrating.  It's completely understandable to feel annoyed, even angry, when dealing with the physical and emotional changes that come with menstruation.  Can you tell me a little more about what's making it so annoying today?  Is it the physical discomfort, the emotional shifts, or something else entirely?\n"
-            ]
+            ],
+            "role": "model"
         },
         {
-            "role": "user",
             "parts": [
                 "physical discomfort it is"
-            ]
+            ],
+            "role": "user"
         },
         {
-            "role": "model",
             "parts": [
                 "I understand.  Physical discomfort during your period can be incredibly challenging. Can you describe what that discomfort feels like for you right now?  Is it cramping, bloating, headaches, or something else?  Knowing more about the sensations might help us understand this better together.\n"
-            ]
+            ],
+            "role": "model"
         },
         {
-            "role": "user",
             "parts": [
                 "can you write me a python code?"
-            ]
+            ],
+            "role": "user"
         },
         {
-            "role": "model",
             "parts": [
                 "I'm sorry, but I can't write Python code for you at this time. My purpose is to provide emotional support and a safe space for you to explore your feelings.  Focusing on your physical discomfort from your period is important right now.  Perhaps we can talk more about that, and how it's affecting you.  Is there anything else you'd like to share about the physical sensations you're experiencing?  Or perhaps how this discomfort is impacting your day?\n"
-            ]
+            ],
+            "role": "model"
+        },
+        {
+            "parts": [
+                "yes lets go ahead with the conversation of discomfort"
+            ],
+            "role": "user"
+        },
+        {
+            "parts": [
+                "Okay, I'm listening.  Tell me more about the discomfort you're feeling.  Is it a sharp pain, a dull ache, or something else entirely?  Where in your body do you feel it most strongly?  And is there anything that seems to make it better or worse?  There's no right or wrong way to describe this; just share what feels comfortable for you.\n"
+            ],
+            "role": "model"
+        },
+        {
+            "emotion": "Neutral",
+            "parts": [
+                "hi"
+            ],
+            "role": "user",
+            "timestamp": "2025-06-29T23:29:16.458297"
+        },
+        {
+            "parts": [
+                "Hi again.  I'm here. How are you feeling today?  Is the discomfort from your period still something you'd like to talk about?  Or is there something else on your mind?  Please remember that I'm here to listen without judgment, whatever you'd like to share.\n"
+            ],
+            "role": "model"
         },
         {
             "role": "user",
             "parts": [
-                "yes lets go ahead with the conversation of discomfort"
-            ]
+                "hi hi"
+            ],
+            "emotion": "Neutral",
+            "timestamp": "2025-06-29T23:33:15.109689"
         },
         {
             "role": "model",
             "parts": [
-                "Okay, I'm listening.  Tell me more about the discomfort you're feeling.  Is it a sharp pain, a dull ache, or something else entirely?  Where in your body do you feel it most strongly?  And is there anything that seems to make it better or worse?  There's no right or wrong way to describe this; just share what feels comfortable for you.\n"
+                "Hi there! It seems like you might be feeling a little anxious or overwhelmed.  Is there anything you'd like to talk about?  Sometimes just having someone to listen can make a big difference.  I'm here for you.\n"
             ]
         }
     ],
@@ -361,9 +389,23 @@
     ],
     "work_school": [
         {
-            "role": "model",
             "parts": [
                 "We can start whenever you're ready."
+            ],
+            "role": "model"
+        },
+        {
+            "role": "user",
+            "parts": [
+                "hi"
+            ],
+            "emotion": "Neutral",
+            "timestamp": "2025-06-29T23:18:00.677338"
+        },
+        {
+            "role": "model",
+            "parts": [
+                "Hi there.  It sounds like you're ready to talk about what's been on your mind.  What would you like to share with me today?  I'm here to listen without judgment.\n"
             ]
         }
     ],
@@ -400,6 +442,84 @@
             "role": "model",
             "parts": [
                 "Thank you for sharing that. It sounds like you're in a good place with your boyfriend, but his current focus on job interviews is creating some distance between you, which can be tough. It's understandable to feel a little disconnected when you're not getting as much time together as you're used to.\n\nIt's great that you recognize this is a phase, which shows a lot of insight.\n\nCan you tell me more about how this lack of time together is making you feel specifically?\n"
+            ]
+        }
+    ],
+    "general": [
+        {
+            "parts": [
+                "We can start whenever you're ready."
+            ],
+            "role": "model"
+        },
+        {
+            "emotion": "Anger",
+            "parts": [
+                "hi i am sooo annoyed as of now because of my roommate , she's a bitch and so annoying she is oh god and that too elder to me and acts like she's younger to me in terms of everything."
+            ],
+            "role": "user",
+            "timestamp": "2025-06-29T23:48:29.802526"
+        },
+        {
+            "parts": [
+                "Hello.  I hear your frustration and anger towards your roommate is very strong right now. It sounds incredibly upsetting to be living with someone who is behaving in a way that feels disrespectful and inconsiderate, especially given the age difference and the dynamic you describe.  Can you tell me a little more about what specifically is bothering you?  What kinds of things does she do that are annoying or make you feel this way?\n\n\nBy the way, it sounds like we're exploring some specific thought patterns..."
+            ],
+            "role": "model"
+        },
+        {
+            "emotion": "Anger",
+            "parts": [
+                "she kept her clothes for washing and she knows that there is no enough space for my clothes which are drying already , this is soo basic and now also she dropped something near my cupboard and didnt clean properly and said bas itna hi i can clean  what do you think should i clean the rest or not."
+            ],
+            "role": "user",
+            "timestamp": "2025-06-29T23:51:30.530628"
+        },
+        {
+            "parts": [
+                "It sounds incredibly frustrating to have your space and needs disregarded like that.  It's completely understandable that you'd feel annoyed \u2013  it's not unreasonable to expect a roommate to be considerate of shared space and to take responsibility for their messes.  The fact that she knowingly put her clothes in a place where it impacted you, and then only cleaned partially, adds to the frustration.\n\nYou're asking whether *you* should clean the rest.  There's no right or wrong answer to that \u2013 it's entirely up to you. Cleaning it up might feel like you're taking on her responsibility, and that could be upsetting.  On the other hand, letting it stay might continue to bother you.\n\nWhat are your feelings about each of those options?  What would feel most respectful of your own needs and boundaries in this situation?\n\n\nBy the way, it sounds like we're exploring some specific thought patterns..."
+            ],
+            "role": "model"
+        },
+        {
+            "emotion": "Anger",
+            "parts": [
+                "and she is acting as if nothing happened bitch"
+            ],
+            "role": "user",
+            "timestamp": "2025-06-29T23:53:16.075420"
+        },
+        {
+            "parts": [
+                "I hear your anger and frustration.  It's incredibly upsetting when someone acts like they haven't done anything wrong, especially after behaving in a way that has clearly impacted you negatively.  That dismissiveness can be incredibly infuriating.  It makes sense that you're feeling angry and maybe even disrespected.  \n\nIs there anything you'd like to explore about how you're feeling, or how you might want to handle this situation with your roommate?  Sometimes, directly addressing the issue \u2013 calmly and clearly explaining how her actions affected you \u2013 can be helpful, but only if you feel safe and comfortable doing so.  There are also other ways to approach this, depending on what feels right for you.\n"
+            ],
+            "role": "model"
+        },
+        {
+            "emotion": "Anger",
+            "parts": [
+                "i am planning to bash her"
+            ],
+            "role": "user",
+            "timestamp": "2025-06-29T23:55:07.871473"
+        },
+        {
+            "parts": [
+                "I understand you're feeling angry and frustrated enough to consider retaliating.  It's natural to feel that way when someone has treated you unfairly and disrespected your boundaries. However, I'm concerned about the idea of \"bashing\" her.  Physical violence is never the answer, and it could have serious consequences for both of you.\n\nIs there something else you could do to manage your anger and address the situation in a safer way? Perhaps talking to her calmly about how her actions have affected you, or finding a way to create more boundaries in your shared space? If you're finding it difficult to manage your feelings, there are resources available to help, such as anger management techniques or support groups.  I'm here to listen and support you in exploring safer and healthier ways to cope with this situation.\n"
+            ],
+            "role": "model"
+        },
+        {
+            "role": "user",
+            "parts": [
+                "i dont care about her enough nor does she."
+            ],
+            "emotion": "Sadness",
+            "timestamp": "2025-06-29T23:55:35.118414"
+        },
+        {
+            "role": "model",
+            "parts": [
+                "It sounds like you feel a lack of connection and mutual respect in your relationship with your roommate.  That's a difficult situation to be in, and it's understandable that you're feeling indifferent to her well-being, given how she's treated you.  It's valid to feel this way when your boundaries haven't been respected.\n\nWhat are your thoughts on how to move forward?  Are you considering finding a new living situation? Or are there other options you're exploring to improve the situation, even if it's just managing your interactions with her more effectively?  It might be helpful to consider what kind of living situation would feel more supportive of your needs and well-being.\n"
             ]
         }
     ]

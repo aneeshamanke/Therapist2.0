@@ -4,60 +4,221 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asha - Your AI Companion</title>
+    <!-- Google Font: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js for graphing -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --background: #111827; /* Deep Charcoal */
+            --surface-1: #1f2937;  /* Dark Slate */
+            --surface-2: #374151;  /* Medium Slate */
+            --accent: #2dd4bf;     /* Teal */
+            --accent-hover: #5eead4;
+            --text-primary: #f9fafb; /* Off-white */
+            --text-secondary: #d1d5db; /* Light Gray */
+            --border-color: #4b5563;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .chat-container { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 20px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); width: 100%; max-width: 800px; height: 80vh; min-height: 600px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-        .menu-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(5px); z-index: 10; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding: 20px; text-align: center; transition: opacity 0.3s ease; overflow-y: auto; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            background: var(--surface-1);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            width: 100%;
+            max-width: 800px;
+            height: 85vh;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .menu-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            transition: opacity 0.5s ease, visibility 0.5s;
+            overflow-y: auto;
+        }
+
         .menu-overlay#mainMenu { justify-content: center; }
-        .menu-overlay.hidden { display: none; opacity: 0; }
-        .dashboard-header { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-top: 10px; }
-        .dashboard-header .menu-title { margin: 0; flex-grow: 1; }
-        .menu-back-btn { font-size: 1.5em; text-decoration: none; color: #555; padding: 0 15px; }
-        .insights-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; width: 100%; max-width: 900px; margin-top: 20px; }
-        .insight-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); display: flex; flex-direction: column;}
-        .insight-card h3 { margin-bottom: 15px; text-align: center; color: #444; }
-        .summary-card, .daily-summary-card, .goals-card { grid-column: 1 / -1; }
-        .chart-wrapper { position: relative; height: 250px; width: 100%; }
-        .goals-list, #insightsSummaryList { list-style: none; padding-left: 0; text-align: left; }
-        #insightsSummaryList li { background: #f8f9fa; border-left: 4px solid #8ec5fc; padding: 10px; margin-bottom: 8px; border-radius: 5px; }
-        .goals-list li { background: #f8f9fa; border-left: 4px solid #667eea; padding: 10px; margin-bottom: 8px; border-radius: 5px; }
-        #dailyComparisonSummaryText { font-size: 1.1em; line-height: 1.6; color: #333; }
-        .chat-header { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; text-align: center; position: relative; }
-        .chat-header h1 { font-size: 1.8em; margin-bottom: 5px; font-weight: 300; }
-        .chat-header p { opacity: 0.9; font-size: 0.9em; }
-        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-        .message { max-width: 80%; padding: 15px 20px; border-radius: 20px; line-height: 1.5; animation: fadeIn 0.3s ease; }
-        .user-message { align-self: flex-end; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-bottom-right-radius: 5px; }
-        .ai-message { align-self: flex-start; background: #f8f9fa; color: #333; border: 1px solid #e9ecef; border-bottom-left-radius: 5px; position: relative; }
-        .typing-indicator { align-self: flex-start; background: #f8f9fa; padding: 15px 20px; border-radius: 20px; border-bottom-left-radius: 5px; display: none; }
-        .chat-input-container { padding: 20px; background: #f8f9fa; border-top: 1px solid #e9ecef; }
-        .menu-title { font-size: 2em; color: #333; margin-bottom: 10px; }
-        .menu-subtitle { font-size: 1em; color: #555; margin-bottom: 30px; }
+        .menu-overlay.hidden { opacity: 0; visibility: hidden; }
+
+        .menu-title { font-size: 2.25em; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; }
+        .menu-subtitle { font-size: 1.1em; font-weight: 400; color: var(--text-secondary); margin-bottom: 40px; }
         .menu-options { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
-        .menu-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px 30px; border-radius: 30px; font-size: 1.1em; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        
+        .menu-btn {
+            background-color: var(--surface-2);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+        }
+
+        .menu-btn:hover {
+            background-color: var(--accent);
+            color: var(--background);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(45, 212, 191, 0.2), 0 4px 6px -2px rgba(45, 212, 191, 0.1);
+        }
+
+        .chat-header {
+            background: var(--surface-1);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+            text-align: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .chat-header h1 { font-size: 1.5em; font-weight: 600; }
+        .chat-header p { color: var(--text-secondary); }
+
+        .menu-back-btn {
+            font-size: 1.5em;
+            text-decoration: none;
+            color: var(--text-secondary);
+            padding: 0 15px;
+            transition: color 0.3s ease;
+        }
+        .menu-back-btn:hover { color: var(--accent-hover); }
+
         .chat-view { display: flex; flex-direction: column; height: 100%; visibility: hidden; }
         .chat-view.active { visibility: visible; }
-        .chat-input-form { display: flex; gap: 10px; align-items: flex-end; }
-        .chat-input { flex: 1; padding: 15px 20px; border: 2px solid #e9ecef; border-radius: 25px; font-size: 1em; resize: none; min-height: 50px; max-height: 120px; font-family: inherit; outline: none; transition: border-color 0.3s ease; }
-        .chat-input:focus { border-color: #667eea; }
-        .send-btn, .voice-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; font-size: 1.2em; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .send-btn:hover, .voice-btn:hover { transform: scale(1.1); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
-        .send-btn:disabled, .voice-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .voice-btn { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
-        .voice-btn.recording { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); animation: recordingPulse 1s infinite; }
-        .voice-status { font-size: 0.8em; color: #666; margin-top: 5px; text-align: center; min-height: 20px; }
 
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .message { max-width: 80%; padding: 12px 20px; border-radius: 20px; line-height: 1.6; animation: fadeIn 0.5s ease; }
+        
+        .user-message {
+            align-self: flex-end;
+            background-color: var(--accent);
+            color: var(--background);
+            font-weight: 500;
+            border-bottom-right-radius: 5px;
+        }
+
+        .ai-message {
+            align-self: flex-start;
+            background: var(--surface-2);
+            color: var(--text-primary);
+            border-bottom-left-radius: 5px;
+        }
+
+        .chat-input-container {
+            padding: 1rem 1.5rem;
+            background: var(--surface-1);
+            border-top: 1px solid var(--border-color);
+        }
+        .chat-input-form { display: flex; gap: 10px; align-items: flex-end; }
+        
+        .chat-input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 1px solid var(--border-color);
+            background-color: var(--surface-2);
+            color: var(--text-primary);
+            border-radius: 16px;
+            font-size: 1em;
+            resize: none;
+            min-height: 52px;
+            max-height: 120px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        .chat-input:focus { border-color: var(--accent); }
+
+        .send-btn, .voice-btn {
+            background-color: var(--accent);
+            color: var(--background);
+            border: none;
+            border-radius: 50%;
+            width: 52px;
+            height: 52px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .send-btn:hover, .voice-btn:hover { background-color: var(--accent-hover); transform: scale(1.1); }
+        .voice-btn { background-color: var(--surface-2); color: var(--text-secondary); }
+        .voice-btn.recording { background: #ef4444; color: white; animation: recordingPulse 1.2s infinite; }
+        .voice-status { font-size: 0.8em; color: var(--text-secondary); margin-top: 5px; text-align: center; min-height: 20px; }
+
+        .dashboard-header { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-top: 10px; }
+        .dashboard-header .menu-title { margin: 0; flex-grow: 1; }
+        
+        .insights-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 900px; margin-top: 20px; }
+        
+        .insight-card {
+            background: var(--surface-2);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+        .insight-card h3 { margin-bottom: 15px; text-align: center; color: var(--accent); font-weight: 600; }
+        
+        .summary-card, .daily-summary-card, .goals-card { grid-column: 1 / -1; }
+        
+        .chart-wrapper { position: relative; height: 280px; width: 100%; }
+        
+        .goals-list, #insightsSummaryList { list-style: none; padding-left: 0; text-align: left; }
+        #insightsSummaryList li { background-color: var(--surface-1); border-left: 4px solid var(--accent); padding: 12px; margin-bottom: 8px; border-radius: 8px; }
+        .goals-list li { background-color: var(--surface-1); border-left: 4px solid var(--accent-hover); padding: 12px; margin-bottom: 8px; border-radius: 8px; }
+        
+        #dailyComparisonSummaryText, #insightsSummaryHeader { font-size: 1.1em; line-height: 1.6; color: var(--text-secondary); }
+        #insightsSummaryHeader { margin-bottom: 1rem; }
+
+        .typing-indicator .ai-message {
+            animation: fadeIn 0.5s ease;
+        }
+        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes recordingPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        @keyframes recordingPulse { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } }
     </style>
 </head>
 <body>
-    <div class="chat-container" id="chatContainer">
+    <div class="chat-container">
         <!-- Main Menu -->
         <div class="menu-overlay" id="mainMenu">
-            <h2 class="menu-title">Welcome</h2>
+            <h2 class="menu-title">Asha</h2>
             <p class="menu-subtitle">Your personal wellness space. How can I help you today?</p>
             <div class="menu-options">
                 <button class="menu-btn" onclick="showSubMenu('topicMenuContainer')">Talk About Something</button>
@@ -70,8 +231,8 @@
         <!-- Topic Sub-Menu -->
         <div class="menu-overlay hidden" id="topicMenuContainer">
             <div class="dashboard-header">
-                 <a href="#" onclick="showMainMenu()" class="menu-back-btn">&larr; Back</a>
-                 <h2 class="menu-title">What would you like to focus on today?</h2>
+                 <a href="#" onclick="showMainMenu()" class="menu-back-btn">&#x2190;</a>
+                 <h2 class="menu-title">What would you like to focus on?</h2>
                  <span style="width: 40px;"></span>
             </div>
             <div class="menu-options" id="topicMenu">
@@ -87,8 +248,8 @@
         <!-- Exercise Sub-Menu -->
         <div class="menu-overlay hidden" id="exerciseMenuContainer">
             <div class="dashboard-header">
-                <a href="#" onclick="showMainMenu()" class="menu-back-btn">&larr; Back</a>
-                <h2 class="menu-title">Which guided exercise would you like to try?</h2>
+                <a href="#" onclick="showMainMenu()" class="menu-back-btn">&#x2190;</a>
+                <h2 class="menu-title">Which exercise would you like to try?</h2>
                 <span style="width: 40px;"></span>
             </div>
             <div class="menu-options" id="exerciseMenu">
@@ -100,22 +261,24 @@
         <!-- Main Chat Area -->
         <div class="chat-view" id="chatView">
             <div class="chat-header">
-                <a href="#" class="menu-back-btn" onclick="confirmEndSession()" style="color: white; top: 50%; transform: translateY(-50%); position: absolute; left: 0;">&#x2190;</a>
+                <a href="#" class="menu-back-btn" onclick="confirmEndSession()">&#x2190;</a>
                 <h1>Asha</h1>
                 <p>Your compassionate AI companion</p>
             </div>
-            <div class="crisis-disclaimer"><strong>Important:</strong> This is an AI for support, not a replacement for a professional. For immediate help, please contact a crisis hotline.</div>
             <div class="chat-messages" id="chatMessages"></div>
-            <div class="typing-indicator" id="typingIndicator"><div class="typing-dots"><span></span><span></span><span></span></div><span style="margin-left: 10px;">Asha is thinking...</span></div>
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="ai-message">Asha is thinking...</div>
+            </div>
             <div class="chat-input-container">
                 <div class="voice-status" id="voiceStatus"></div>
-                <!-- FIX: Restored the full chat form including the voice button -->
                 <form class="chat-input-form" id="chatForm" onsubmit="sendMessage(event)">
-                    <textarea class="chat-input" id="messageInput" placeholder="Type your message here..." rows="1" oninput="autoResize(this)" onkeydown="handleKeyDown(event)"></textarea>
+                    <textarea class="chat-input" id="messageInput" placeholder="Type your message..." rows="1" oninput="autoResize(this)" onkeydown="handleKeyDown(event)"></textarea>
                     <button type="button" class="voice-btn" id="voiceBtn" onclick="toggleVoiceRecording()">
-                        <span id="voiceIcon">🎤</span>
+                        <svg id="voiceIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line></svg>
                     </button>
-                    <button type="submit" class="send-btn" id="sendBtn"><span>➤</span></button>
+                    <button type="submit" class="send-btn" id="sendBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </button>
                 </form>
             </div>
         </div>
@@ -347,10 +510,25 @@
                     datasets: [{
                         label: 'Emotion Count',
                         data: Object.values(chartData),
-                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
+                        backgroundColor: ['#ef4444', '#3b82f6', '#facc15', '#2dd4bf', '#a78bfa', '#fb923c'],
+                        borderRadius: 4
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            ticks: { color: '#d1d5db', stepSize: 1 },
+                            grid: { color: '#374151' }
+                        },
+                        x: {
+                            ticks: { color: '#d1d5db' },
+                            grid: { color: '#374151' }
+                        }
+                    }
+                }
             });
         }
 
@@ -364,13 +542,25 @@
                     datasets: [{
                         label: 'Message Count',
                         data: Object.values(chartData),
-                        backgroundColor: '#36A2EB',
+                        backgroundColor: '#2dd4bf',
+                        borderRadius: 4
                     }]
                 },
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
-                    indexAxis: 'y'
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            ticks: { color: '#d1d5db' },
+                            grid: { color: '#374151' }
+                        },
+                        x: {
+                            ticks: { color: '#d1d5db', stepSize: 1 },
+                            grid: { color: '#374151' }
+                        }
+                    }
                 }
             });
         }
@@ -428,7 +618,6 @@
             recognition.onstart = () => {
                 isRecording = true;
                 voiceBtn.classList.add('recording');
-                voiceIcon.textContent = '⏹️';
                 voiceStatus.textContent = 'Listening...';
                 sendBtn.disabled = true;
             };
@@ -442,7 +631,6 @@
             recognition.onend = () => {
                 isRecording = false;
                 voiceBtn.classList.remove('recording');
-                voiceIcon.textContent = '🎤';
                 voiceStatus.textContent = '';
                 sendBtn.disabled = false;
                 if (messageInput.value.trim()) {
@@ -458,14 +646,14 @@
 
         function toggleVoiceRecording() {
             if (isRecording) {
-                recognition.stop();
+                if(recognition) recognition.stop();
             } else if (!isAISpeaking) {
                 if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
                 try {
-                    recognition.start();
+                    if(recognition) recognition.start();
                 } catch (error) {
                     console.error('Error starting recognition:', error);
-                    voiceStatus.textContent = 'Please allow microphone access.';
+                    if(voiceStatus) voiceStatus.textContent = 'Please allow microphone access.';
                 }
             }
         }
