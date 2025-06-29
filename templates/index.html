@@ -9,10 +9,12 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
         .chat-container { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 20px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); width: 100%; max-width: 800px; height: 80vh; min-height: 600px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-        /* FIX: Changed justify-content to flex-start for top alignment */
         .menu-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(5px); z-index: 10; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding: 20px; text-align: center; transition: opacity 0.3s ease; overflow-y: auto; }
-        .menu-overlay#mainMenu { justify-content: center; } /* Keep main menu centered */
+        .menu-overlay#mainMenu { justify-content: center; }
         .menu-overlay.hidden { display: none; opacity: 0; }
+        .dashboard-header { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-top: 10px; }
+        .dashboard-header .menu-title { margin: 0; flex-grow: 1; }
+        .menu-back-btn { font-size: 1.5em; text-decoration: none; color: #555; padding: 0 15px; }
         .insights-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; width: 100%; max-width: 900px; margin-top: 20px; }
         .insight-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); display: flex; flex-direction: column;}
         .insight-card h3 { margin-bottom: 15px; text-align: center; color: #444; }
@@ -35,22 +37,17 @@
         .menu-subtitle { font-size: 1em; color: #555; margin-bottom: 30px; }
         .menu-options { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
         .menu-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px 30px; border-radius: 30px; font-size: 1.1em; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        /* FIX: Removed absolute positioning */
-        .menu-back-btn { font-size: 1.5em; text-decoration: none; color: #555; }
         .chat-view { display: flex; flex-direction: column; height: 100%; visibility: hidden; }
         .chat-view.active { visibility: visible; }
-        /* FIX: New header for dashboard to contain button and title */
-        .dashboard-header {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        .dashboard-header .menu-title {
-            margin: 0;
-            flex-grow: 1; /* Allows title to take up space and center */
-        }
+        
+        /* FIX: Restored full styling for the chat input form */
+        .chat-input-form { display: flex; gap: 10px; align-items: flex-end; }
+        .chat-input { flex: 1; padding: 15px 20px; border: 2px solid #e9ecef; border-radius: 25px; font-size: 1em; resize: none; min-height: 50px; max-height: 120px; font-family: inherit; outline: none; transition: border-color 0.3s ease; }
+        .chat-input:focus { border-color: #667eea; }
+        .send-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; font-size: 1.2em; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .send-btn:hover { transform: scale(1.1); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -69,11 +66,10 @@
         
         <!-- Topic Sub-Menu -->
         <div class="menu-overlay hidden" id="topicMenuContainer">
-            <!-- FIX: Added dashboard-header structure -->
             <div class="dashboard-header">
                  <a href="#" onclick="showMainMenu()" class="menu-back-btn">&larr; Back</a>
                  <h2 class="menu-title">What would you like to focus on today?</h2>
-                 <span></span> <!-- Empty span for spacing -->
+                 <span style="width: 40px;"></span>
             </div>
             <div class="menu-options" id="topicMenu">
                 <button class="menu-btn" data-topic="work_school">Work or School</button>
@@ -87,11 +83,10 @@
         
         <!-- Exercise Sub-Menu -->
         <div class="menu-overlay hidden" id="exerciseMenuContainer">
-            <!-- FIX: Added dashboard-header structure -->
             <div class="dashboard-header">
                 <a href="#" onclick="showMainMenu()" class="menu-back-btn">&larr; Back</a>
                 <h2 class="menu-title">Which guided exercise would you like to try?</h2>
-                <span></span> <!-- Empty span for spacing -->
+                <span style="width: 40px;"></span>
             </div>
             <div class="menu-options" id="exerciseMenu">
                 <button class="menu-btn" data-topic="cognitive_reframing">Cognitive Reframing</button>
@@ -102,7 +97,7 @@
         <!-- Main Chat Area -->
         <div class="chat-view" id="chatView">
             <div class="chat-header">
-                <span class="header-back-btn" onclick="confirmEndSession()">&#x2190;</span>
+                <a href="#" class="menu-back-btn" onclick="confirmEndSession()" style="color: white; top: 50%; transform: translateY(-50%); position: absolute; left: 0;">&#x2190;</a>
                 <h1>Asha</h1>
                 <p>Your compassionate AI companion</p>
             </div>
@@ -111,20 +106,20 @@
             <div class="typing-indicator" id="typingIndicator"><div class="typing-dots"><span></span><span></span><span></span></div><span style="margin-left: 10px;">Asha is thinking...</span></div>
             <div class="chat-input-container">
                 <div class="voice-status" id="voiceStatus"></div>
+                <!-- FIX: Restored the proper form structure and textarea attributes -->
                 <form class="chat-input-form" id="chatForm" onsubmit="sendMessage(event)">
                     <textarea class="chat-input" id="messageInput" placeholder="Type your message here..." rows="1" oninput="autoResize(this)" onkeydown="handleKeyDown(event)"></textarea>
-                    <!-- Voice and Send Buttons will be here -->
+                    <button type="submit" class="send-btn" id="sendBtn"><span>➤</span></button>
                 </form>
             </div>
         </div>
 
         <!-- Insights Dashboard View -->
         <div class="menu-overlay hidden" id="insightsView">
-            <!-- FIX: Added dashboard-header structure -->
             <div class="dashboard-header">
                 <a href="#" onclick="showMainMenu()" class="menu-back-btn">&larr; Back to Menu</a>
                 <h2 class="menu-title">Your Insights Dashboard</h2>
-                <span></span> <!-- Empty span for spacing -->
+                <span style="width: 40px;"></span>
             </div>
             <div class="insights-grid">
                 <div class="insight-card summary-card">
@@ -207,7 +202,70 @@
             if(messageInput) messageInput.focus();
         }
 
-        // --- Core Logic ---
+        // --- Core Application Logic ---
+        async function startSession(topic) {
+            showChatView();
+            showTyping();
+            chatMessages.innerHTML = '';
+
+            try {
+                const response = await fetch('/start_session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic: topic })
+                });
+                const data = await response.json();
+                hideTyping();
+
+                if (response.ok) {
+                    if (data.history && data.history.length > 0) {
+                        data.history.forEach(message => {
+                            const isUser = message.role === 'user';
+                            addMessage(message.parts[0], isUser, false);
+                        });
+                    }
+                    if (data.initial_message) {
+                        addMessage(data.initial_message, false, true);
+                    }
+                } else {
+                    addMessage(data.error || "Sorry, I had trouble starting.", false, true);
+                }
+            } catch (error) {
+                hideTyping();
+                addMessage("I'm having connection issues. Please try again.", false, true);
+            }
+        }
+
+        async function sendMessage(event) {
+            if (event) event.preventDefault();
+            if (!messageInput) return;
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, true, false);
+            messageInput.value = '';
+            
+            showTyping();
+
+            try {
+                const response = await fetch('/send_message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    addMessage(data.response, false, true);
+                } else {
+                    addMessage(data.error || 'An error occurred.', false, true);
+                }
+            } catch (error) {
+                addMessage('I\'m having trouble connecting right now. Please try again.', false, true);
+            } finally {
+                hideTyping();
+            }
+        }
+
         async function getInsights() {
             showTypingInMenu();
             try {
@@ -220,15 +278,11 @@
                     return;
                 }
                 
-                // Populate Summaries
                 const summaryHeader = document.getElementById('insightsSummaryHeader');
                 const summaryList = document.getElementById('insightsSummaryList');
-                summaryList.innerHTML = ''; // Clear previous list
-                
+                summaryList.innerHTML = '';
                 const summaryParts = data.summary.split('*');
-                const headerText = summaryParts.shift().trim();
-                summaryHeader.textContent = headerText;
-
+                if(summaryHeader) summaryHeader.textContent = summaryParts.shift().trim();
                 summaryParts.forEach(point => {
                     if(point.trim()) {
                         const li = document.createElement('li');
@@ -239,7 +293,6 @@
 
                 document.getElementById('dailyComparisonSummaryText').textContent = data.daily_comparison_summary;
 
-                // Populate Goals
                 const goalsList = document.getElementById('activeGoalsList');
                 goalsList.innerHTML = '';
                 if (data.active_goals && data.active_goals.length > 0) {
@@ -252,7 +305,6 @@
                     goalsList.innerHTML = '<li>You have no active goals set.</li>';
                 }
 
-                // Render Charts
                 renderOverallEmotionChart(data.charts.emotion_distribution);
                 renderTopicFocusChart(data.charts.topic_distribution);
                 
@@ -304,6 +356,7 @@
             });
         }
         
+        // --- Helper Functions and Event Listeners ---
         function addMessage(content, isUser, shouldSpeak) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
@@ -311,9 +364,12 @@
             messageDiv.innerHTML = messageDiv.innerHTML.replace(/\n/g, '<br>');
             if(chatMessages) chatMessages.appendChild(messageDiv);
             if(chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+            if(shouldSpeak && !isUser && 'speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(content);
+                speechSynthesis.speak(utterance);
+            }
         }
-        
-        // --- Helper Functions and Event Listeners ---
+
         function showTypingInMenu() {
             const insightsBtn = Array.from(document.querySelectorAll('.menu-btn')).find(btn => btn.textContent === 'Review My Insights');
             if (insightsBtn) insightsBtn.textContent = 'Loading...';
@@ -324,6 +380,19 @@
         }
         function showTyping() { if(typingIndicator) typingIndicator.style.display = 'flex'; if(chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight; }
         function hideTyping() { if(typingIndicator) typingIndicator.style.display = 'none'; }
+        
+        // FIX: Restored autoResize and handleKeyDown functions
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage(event);
+            }
+        }
         
         window.addEventListener('load', () => {
             showMainMenu();
@@ -344,10 +413,6 @@
                 }
             });
         }
-        // Dummy functions for elements not fully included in the snippet
-        async function startSession(topic) { console.log("Starting session for", topic); }
-        async function sendMessage(event) { console.log("Sending message"); }
-        function autoResize(el) {}
     </script>
 </body>
 </html>
