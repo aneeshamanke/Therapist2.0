@@ -39,15 +39,18 @@
         .menu-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px 30px; border-radius: 30px; font-size: 1.1em; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .chat-view { display: flex; flex-direction: column; height: 100%; visibility: hidden; }
         .chat-view.active { visibility: visible; }
-        
-        /* FIX: Restored full styling for the chat input form */
         .chat-input-form { display: flex; gap: 10px; align-items: flex-end; }
         .chat-input { flex: 1; padding: 15px 20px; border: 2px solid #e9ecef; border-radius: 25px; font-size: 1em; resize: none; min-height: 50px; max-height: 120px; font-family: inherit; outline: none; transition: border-color 0.3s ease; }
         .chat-input:focus { border-color: #667eea; }
-        .send-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; font-size: 1.2em; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .send-btn:hover { transform: scale(1.1); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        .send-btn, .voice-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; font-size: 1.2em; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .send-btn:hover, .voice-btn:hover { transform: scale(1.1); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        .send-btn:disabled, .voice-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .voice-btn { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .voice-btn.recording { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); animation: recordingPulse 1s infinite; }
+        .voice-status { font-size: 0.8em; color: #666; margin-top: 5px; text-align: center; min-height: 20px; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes recordingPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
     </style>
 </head>
 <body>
@@ -106,9 +109,12 @@
             <div class="typing-indicator" id="typingIndicator"><div class="typing-dots"><span></span><span></span><span></span></div><span style="margin-left: 10px;">Asha is thinking...</span></div>
             <div class="chat-input-container">
                 <div class="voice-status" id="voiceStatus"></div>
-                <!-- FIX: Restored the proper form structure and textarea attributes -->
+                <!-- FIX: Restored the full chat form including the voice button -->
                 <form class="chat-input-form" id="chatForm" onsubmit="sendMessage(event)">
                     <textarea class="chat-input" id="messageInput" placeholder="Type your message here..." rows="1" oninput="autoResize(this)" onkeydown="handleKeyDown(event)"></textarea>
+                    <button type="button" class="voice-btn" id="voiceBtn" onclick="toggleVoiceRecording()">
+                        <span id="voiceIcon">🎤</span>
+                    </button>
                     <button type="submit" class="send-btn" id="sendBtn"><span>➤</span></button>
                 </form>
             </div>
@@ -167,10 +173,18 @@
         const chatView = document.getElementById('chatView');
         const topicMenuContainer = document.getElementById('topicMenuContainer');
         const exerciseMenuContainer = document.getElementById('exerciseMenuContainer');
+        const sendBtn = document.getElementById('sendBtn');
+        const voiceBtn = document.getElementById('voiceBtn');
+        const voiceIcon = document.getElementById('voiceIcon');
+        const voiceStatus = document.getElementById('voiceStatus');
 
-        // --- Chart State ---
+        // --- Chart & Speech State ---
         let emotionChart = null;
         let topicChart = null;
+        let recognition = null;
+        let isRecording = false;
+        let isAISpeaking = false;
+
 
         // --- UI State Management ---
         function showMainMenu() {
@@ -244,8 +258,11 @@
 
             addMessage(message, true, false);
             messageInput.value = '';
+            autoResize(messageInput);
             
             showTyping();
+            sendBtn.disabled = true;
+            voiceBtn.disabled = true;
 
             try {
                 const response = await fetch('/send_message', {
@@ -263,6 +280,8 @@
                 addMessage('I\'m having trouble connecting right now. Please try again.', false, true);
             } finally {
                 hideTyping();
+                sendBtn.disabled = false;
+                voiceBtn.disabled = false;
             }
         }
 
@@ -356,7 +375,7 @@
             });
         }
         
-        // --- Helper Functions and Event Listeners ---
+        // --- Helper, UI, and Speech Functions ---
         function addMessage(content, isUser, shouldSpeak) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
@@ -366,6 +385,8 @@
             if(chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
             if(shouldSpeak && !isUser && 'speechSynthesis' in window) {
                 const utterance = new SpeechSynthesisUtterance(content);
+                utterance.onstart = () => { isAISpeaking = true; if(voiceBtn) voiceBtn.disabled = true; };
+                utterance.onend = () => { isAISpeaking = false; if(voiceBtn && !isRecording) voiceBtn.disabled = false; };
                 speechSynthesis.speak(utterance);
             }
         }
@@ -381,7 +402,6 @@
         function showTyping() { if(typingIndicator) typingIndicator.style.display = 'flex'; if(chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight; }
         function hideTyping() { if(typingIndicator) typingIndicator.style.display = 'none'; }
         
-        // FIX: Restored autoResize and handleKeyDown functions
         function autoResize(textarea) {
             textarea.style.height = 'auto';
             textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
@@ -393,8 +413,66 @@
                 sendMessage(event);
             }
         }
+
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                if(voiceBtn) voiceBtn.style.display = 'none';
+                return;
+            }
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                isRecording = true;
+                voiceBtn.classList.add('recording');
+                voiceIcon.textContent = '⏹️';
+                voiceStatus.textContent = 'Listening...';
+                sendBtn.disabled = true;
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = Array.from(event.results).map(r => r[0]).map(r => r.transcript).join('');
+                messageInput.value = transcript;
+                autoResize(messageInput);
+            };
+
+            recognition.onend = () => {
+                isRecording = false;
+                voiceBtn.classList.remove('recording');
+                voiceIcon.textContent = '🎤';
+                voiceStatus.textContent = '';
+                sendBtn.disabled = false;
+                if (messageInput.value.trim()) {
+                    sendMessage();
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                voiceStatus.textContent = 'Error: ' + event.error;
+            };
+        }
+
+        function toggleVoiceRecording() {
+            if (isRecording) {
+                recognition.stop();
+            } else if (!isAISpeaking) {
+                if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
+                try {
+                    recognition.start();
+                } catch (error) {
+                    console.error('Error starting recognition:', error);
+                    voiceStatus.textContent = 'Please allow microphone access.';
+                }
+            }
+        }
         
+        // --- Event Listeners ---
         window.addEventListener('load', () => {
+            initSpeechRecognition();
             showMainMenu();
         });
 
