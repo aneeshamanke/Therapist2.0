@@ -10,9 +10,10 @@ from prompts import (
     EMOTION_ANALYSIS_PROMPT, DAILY_COMPARISON_PROMPT, GOAL_FEEDBACK_PROMPT
 )
 
-MODEL_NAME = "gemini-2.0-flash"
+MODEL_NAME = "gemini-1.5-flash"
 
 try:
+    # It's recommended to set your API key as an environment variable
     genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 except KeyError:
     print("API Key Not Found! Please set the GOOGLE_API_KEY environment variable.")

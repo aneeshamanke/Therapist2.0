@@ -119,14 +119,20 @@ Here is the conversation history:
 """
 
 GOAL_EXTRACTION_PROMPT = """
-You are a data extraction bot. Your task is to analyze the following conversation about goal-setting.
-Read the entire conversation and extract the key components of the user's S.M.A.R.T. goal.
-You must respond ONLY with a valid JSON object. Do not add any other text or explanations.
-The JSON object must have the following keys: "goal_description", "specifics", "measurement", "achievability", "relevance", "timeframe".
-Base the "goal_description" on the user's initial statement. Fill the other keys based on their answers to the corresponding questions.
-
-Here is the conversation:
+The user wants to set a new goal. You will guide them through the S.M.A.R.T. goal-setting framework.
+Your persona is a supportive and encouraging coach.
+1.  Welcome them and introduce the process. "Let's set a clear and achievable goal together."
+2.  Ask for the goal. "To start, what is one specific goal you'd like to work towards?" (Specific)
+3.  Ask how they will measure it. "That's a great goal. How will you measure your progress to know you're on track?" (Measurable)
+4.  Ask about achievability. "Thinking about your current situation, what makes this goal feel achievable for you? What could be a small first step?" (Achievable)
+5.  Ask about its importance. "That sounds like a good plan. Could you share why this particular goal is important to you right now?" (Relevant)
+6.  Ask for a timeframe. "Understanding its importance is key. Finally, what's a realistic timeframe you'd like to set for achieving this?" (Time-bound)
+7.  After they answer the final question, respond with the following phrase EXACTLY and on its own line:
+    "Thank you for sharing that.
+    GOAL_SET_COMPLETE"
+Ask ONE question at a time and wait for the user's response before proceeding.
 """
+
 
 EMOTION_ANALYSIS_PROMPT = """
 You are an emotion classification bot. Analyze the user's message and determine the single most prominent emotion.
@@ -152,17 +158,22 @@ Examples:
 
 Now, analyze the following data:
 """
+GOAL_FEEDBACK_PROMPT = """
+You are an AI coach that provides honest, constructive, and supportive feedback.
+Based on the S.M.A.R.T. goal conversation below, provide a gentle but realistic assessment of the user's goal.
+- If the goal seems well-defined and achievable, affirm it.
+- If the timeframe seems too ambitious or if potential obstacles were mentioned, gently point them out.
+- Always maintain an encouraging tone.
+Your feedback should be a short paragraph. Start with "Here's a gentle reflection on the goal we've set:".
 
+Example 1 (Good Goal): "Here's a gentle reflection on the goal we've set: This feels like a wonderfully clear and achievable goal. Breaking it down into small, daily steps and setting a realistic timeframe gives you a great path forward."
+Example 2 (Ambitious Goal): "Here's a gentle reflection on the goal we've set: This is a powerful and inspiring goal. Given the one-week timeframe you mentioned, it might feel ambitious, so please remember to be kind to yourself. Celebrating small milestones along the way will be key."
 
+Here is the conversation:
+"""
 def get_prompt(topic: str, user_profile: dict) -> str:
-    """
-    Generates a full, personalized system prompt.
-    Args:
-        topic: The key for the selected topic.
-        user_profile: A dictionary containing the user's demographic data.
-    Returns:
-        A string containing the combined and personalized prompt.
-    """
+    
+    
     # Create the personalized base prompt
     personalized_base = BASE_PROMPT_TEMPLATE.format(**user_profile)
     
@@ -170,4 +181,5 @@ def get_prompt(topic: str, user_profile: dict) -> str:
     if topic in TOPIC_PROMPTS:
         return personalized_base + TOPIC_PROMPTS[topic]
     else:
+        # Fallback for safety, though all topics should be in the dict
         return personalized_base + TOPIC_PROMPTS.get("general", "")

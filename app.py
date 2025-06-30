@@ -1,8 +1,6 @@
 # app.py
-# The main Flask web server for the TherapistAI application.
 
 from flask import Flask, render_template, request, jsonify, session
-import os
 import secrets
 import prompts
 import llm_service
@@ -16,19 +14,37 @@ app.secret_key = secrets.token_hex(16)
 
 CONVO_LOG_FILE = "conversation_log.json"
 GOALS_FILE = "goals.json"
+USER_PROFILES_FILE = "user_profiles.json"
+
+# --- Helper Functions ---
+def load_user_profiles():
+    try:
+        with open(USER_PROFILES_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+def save_user_profile(profile_data):
+    profiles = load_user_profiles()
+    profiles[profile_data['name']] = profile_data
+    try:
+        with open(USER_PROFILES_FILE, "w", encoding="utf-8") as f:
+            json.dump(profiles, f, indent=4)
+    except Exception as e:
+        print(f"Error writing to profiles file: {e}")
 
 def load_convo_logs():
-    """Reads the entire JSON conversation log file into a dictionary."""
     try:
         with open(CONVO_LOG_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
 
-def save_history_for_topic(topic, history):
-    """Saves the provided chat history to the JSON conversation log."""
+def save_history_for_topic(user_name, topic, history):
     logs = load_convo_logs()
-    logs[topic] = history
+    if user_name not in logs:
+        logs[user_name] = {}
+    logs[user_name][topic] = history
     try:
         with open(CONVO_LOG_FILE, "w", encoding="utf-8") as f:
             json.dump(logs, f, indent=4)
@@ -36,7 +52,6 @@ def save_history_for_topic(topic, history):
         print(f"Error writing to convo log file: {e}")
 
 def load_goals():
-    """Reads the JSON goals file into a list."""
     try:
         with open(GOALS_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -44,89 +59,89 @@ def load_goals():
         return []
 
 def save_goal(goal_data):
-    """Appends a new structured goal to the goals file."""
     goals = load_goals()
     goals.append(goal_data)
     try:
         with open(GOALS_FILE, "w", encoding="utf-8") as f:
             json.dump(goals, f, indent=4)
-        print(f"Successfully saved new goal: {goal_data['id']}")
     except Exception as e:
         print(f"Error writing to goals file: {e}")
 
+# --- Routes ---
 @app.route('/')
 def index():
-    """Renders the main chat page."""
     return render_template('index.html')
+
+@app.route('/create_profile', methods=['POST'])
+def create_profile():
+    profile_data = request.json
+    if not profile_data or not profile_data.get('name'):
+        return jsonify({"error": "Name is required."}), 400
+    
+    save_user_profile(profile_data)
+    session['user_name'] = profile_data['name']
+    session['user_profile'] = profile_data
+    
+    return jsonify({"status": "success", "message": "Profile created."})
 
 @app.route('/start_session', methods=['POST'])
 def start_session():
-    """Initializes a chat, loading previous history for the selected topic if it exists."""
+    if 'user_profile' not in session:
+        return jsonify({"error": "User profile not found. Please log in."}), 401
+
     data = request.json
     topic = data.get('topic')
     if not topic:
         return jsonify({"error": "Topic not provided"}), 400
     
-    logs = load_convo_logs()
-    topic_history = logs.get(topic, [])
-
+    user_name = session['user_name']
+    user_logs = load_convo_logs().get(user_name, {})
+    topic_history = user_logs.get(topic, [])
+    
     history_for_model = [
         {"role": msg["role"], "parts": msg["parts"]} for msg in topic_history
     ]
-
-    system_prompt = prompts.get_prompt(topic)
-    model = llm_service.initialize_model(system_prompt)
-    if not model:
-        return jsonify({"error": "Failed to initialize AI model"}), 500
     
+    system_prompt = prompts.get_prompt(topic, session['user_profile'])
+    model = llm_service.initialize_model(system_prompt)
     chat = model.start_chat(history=history_for_model)
     
     initial_ai_message = None
     if not topic_history:
-        initial_ai_message = "We can start whenever you're ready."
+        initial_ai_message = f"Hi {user_name}, we can start whenever you're ready."
         if topic in ["cognitive_reframing", "three_good_things", "goal_setting"]:
             initial_ai_message = llm_service.send_message(chat, "Let's begin.")
         
         topic_history.append({"role": "model", "parts": [initial_ai_message]})
-        save_history_for_topic(topic, topic_history)
+        save_history_for_topic(user_name, topic, topic_history)
 
     session['chat_history'] = topic_history
     session['topic'] = topic
-
-    return jsonify({
-        "status": "success",
-        "history": topic_history,
-        "initial_message": initial_ai_message
-    })
+    
+    return jsonify({"status": "success", "history": topic_history, "initial_message": initial_ai_message})
 
 @app.route('/send_message', methods=['POST'])
 def send_message():
-    """Handles sending a message, analyzes emotion, and triggers other logic."""
-    if 'chat_history' not in session:
-        return jsonify({"error": "Session not started."}), 400
-
+    if 'user_profile' not in session:
+        return jsonify({"error": "User profile not found."}), 401
+    
     data = request.json
     user_message = data.get('message')
     current_topic = session.get('topic')
     current_history = session.get('chat_history', [])
+    user_name = session['user_name']
 
-    if not user_message or not current_topic:
-        return jsonify({"error": "No message or topic provided"}), 400
-        
     emotion = llm_service.analyze_emotion(user_message)
-    user_message_entry = {
-        "role": "user",
-        "parts": [user_message],
-        "emotion": emotion,
-        "timestamp": datetime.datetime.now().isoformat()
-    }
-    current_history.append(user_message_entry)
+    current_history.append({
+        "role": "user", "parts": [user_message],
+        "emotion": emotion, "timestamp": datetime.datetime.now().isoformat()
+    })
 
     history_for_model = [
         {"role": msg["role"], "parts": msg["parts"]} for msg in current_history
     ]
 
-    system_prompt = prompts.get_prompt(current_topic)
+    system_prompt = prompts.get_prompt(current_topic, session['user_profile'])
     model = llm_service.initialize_model(system_prompt)
     chat = model.start_chat(history=history_for_model)
 
@@ -134,30 +149,30 @@ def send_message():
 
     if current_topic == "goal_setting" and "GOAL_SET_COMPLETE" in ai_response_text:
         goal_data = llm_service.extract_goal_from_conversation(chat.history)
+        feedback_text = llm_service.get_goal_feedback(chat.history)
+        
         if goal_data:
             goal_data['id'] = str(uuid.uuid4())
             goal_data['status'] = 'active'
             goal_data['date_set'] = datetime.date.today().isoformat()
             save_goal(goal_data)
+        
         ai_response_text = ai_response_text.replace("GOAL_SET_COMPLETE", "").strip()
-    else:
-        recommendation = llm_service.recommend_exercise(chat.history)
-        if recommendation == "SUGGEST_COGNITIVE_REFRAMING":
-            ai_response_text += "\n\nBy the way, it sounds like we're exploring some specific thought patterns..."
-        elif recommendation == "SUGGEST_THREE_GOOD_THINGS":
-            ai_response_text += "\n\nI hear that things feel heavy right now. Sometimes focusing on small positives can help..."
-
-    current_history.append({"role": "model", "parts": [ai_response_text]})
+        ai_response_text += f"\n\n{feedback_text}"
     
+    current_history.append({"role": "model", "parts": [ai_response_text]})
     session['chat_history'] = current_history
-    save_history_for_topic(current_topic, current_history)
+    save_history_for_topic(user_name, current_topic, current_history)
     
     return jsonify({"response": ai_response_text})
 
 @app.route('/get_insights', methods=['GET'])
 def get_insights():
-    """Provides a full data payload for the dashboard, including the comparison summary."""
-    logs = load_convo_logs()
+    if 'user_name' not in session:
+        return jsonify({"error": "User not logged in."}), 401
+    
+    user_name = session['user_name']
+    logs = load_convo_logs().get(user_name, {})
     goals = load_goals()
 
     if not logs:
