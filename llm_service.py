@@ -1,5 +1,4 @@
 # llm_service.py
-# This module handles all interactions with the Google Gemini API.
 
 import google.generativeai as genai
 from dotenv import load_dotenv
@@ -8,10 +7,10 @@ import os
 import json
 from prompts import (
     INSIGHTS_PROMPT, EXERCISE_RECOMMENDATION_PROMPT, GOAL_EXTRACTION_PROMPT,
-    EMOTION_ANALYSIS_PROMPT, DAILY_COMPARISON_PROMPT
+    EMOTION_ANALYSIS_PROMPT, DAILY_COMPARISON_PROMPT, GOAL_FEEDBACK_PROMPT
 )
 
-MODEL_NAME = "gemini-1.5-flash"
+MODEL_NAME = "gemini-2.0-flash"
 
 try:
     genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
@@ -34,32 +33,11 @@ def start_chat(model):
 def send_message(chat_session, message: str):
     """Sends a message to the chat session and gets the response."""
     try:
-        print("\nAI is thinking...")
         response = chat_session.send_message(message)
         return response.text
     except Exception as e:
         print(f"Error sending message to LLM: {e}")
         return "I'm sorry, an error occurred on my end. Let's try that again."
-
-def recommend_exercise(chat_history: list):
-    """Analyzes a chat history to recommend a guided exercise."""
-    if not chat_history or len(chat_history) < 2:
-        return None
-    recommendation_model = genai.GenerativeModel(MODEL_NAME)
-    full_conversation = "\n".join([f"{item.role}: {item.parts[0].text}" for item in chat_history])
-    prompt = EXERCISE_RECOMMENDATION_PROMPT + full_conversation
-    try:
-        print("\nAnalyzing for exercise recommendation...")
-        response = recommendation_model.generate_content(prompt)
-        keyword = response.text.strip().upper()
-        if "SUGGEST_COGNITIVE_REFRAMING" in keyword:
-            return "SUGGEST_COGNITIVE_REFRAMING"
-        if "SUGGEST_THREE_GOOD_THINGS" in keyword:
-            return "SUGGEST_THREE_GOOD_THINGS"
-        return None
-    except Exception as e:
-        print(f"Error generating exercise recommendation: {e}")
-        return None
 
 def get_insights(chat_history_lines: list):
     """Analyzes a list of chat log lines to provide a summary."""
@@ -69,7 +47,6 @@ def get_insights(chat_history_lines: list):
     full_conversation = "\n".join(chat_history_lines)
     prompt = INSIGHTS_PROMPT + full_conversation
     try:
-        print("\nAnalyzing your journal for insights...")
         response = insights_model.generate_content(prompt)
         return response.text
     except Exception as e:
@@ -78,7 +55,6 @@ def get_insights(chat_history_lines: list):
 
 def extract_goal_from_conversation(chat_history: list):
     """Uses the LLM to extract a structured goal from a completed conversation."""
-    print("\nExtracting structured goal from conversation...")
     extraction_model = genai.GenerativeModel(MODEL_NAME)
     full_conversation = "\n".join([f"{item.role}: {item.parts[0].text}" for item in chat_history])
     prompt = GOAL_EXTRACTION_PROMPT + full_conversation
@@ -89,7 +65,6 @@ def extract_goal_from_conversation(chat_history: list):
         return goal_data
     except Exception as e:
         print(f"Error extracting or parsing goal JSON: {e}")
-        print(f"LLM response was: {response.text}")
         return None
 
 def analyze_emotion(user_message: str):
@@ -113,14 +88,23 @@ def get_daily_comparison_summary(comparison_data: str):
     """Uses the LLM to generate a human-like summary comparing two days."""
     if not comparison_data:
         return "Not enough data for a daily comparison yet. Let's talk more!"
-        
     trend_model = genai.GenerativeModel(MODEL_NAME)
     prompt = DAILY_COMPARISON_PROMPT + comparison_data
-
     try:
-        print("\nGenerating daily comparison summary...")
         response = trend_model.generate_content(prompt)
         return response.text
     except Exception as e:
         print(f"Error generating daily comparison summary: {e}")
         return "I had trouble analyzing the daily comparison right now."
+
+def get_goal_feedback(chat_history: list):
+    """Analyzes a goal-setting conversation to provide constructive feedback."""
+    feedback_model = genai.GenerativeModel(MODEL_NAME)
+    full_conversation = "\n".join([f"{item.role}: {item.parts[0].text}" for item in chat_history])
+    prompt = GOAL_FEEDBACK_PROMPT + full_conversation
+    try:
+        response = feedback_model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        print(f"Error generating goal feedback: {e}")
+        return "You've set a wonderful goal for yourself. Taking this step is a great achievement."
