@@ -1,0 +1,10 @@
+{
+    "Aneesha": {
+        "name": "Aneesha",
+        "age": "23",
+        "gender": "Male",
+        "marital_status": "Single",
+        "employment": "Working",
+        "country": "India"
+    }
+}

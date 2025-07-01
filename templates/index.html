@@ -4,510 +4,681 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asha - Your AI Companion</title>
+    <!-- Google Font: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js for graphing -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --background: #111827; --surface-1: #1f2937; --surface-2: #374151;
-            --accent: #2dd4bf; --accent-hover: #5eead4; --text-primary: #f9fafb;
-            --text-secondary: #d1d5db; --border-color: #4b5563;
+            --background: #111827; /* Deep Charcoal */
+            --surface-1: #1f2937;  /* Dark Slate */
+            --surface-2: #374151;  /* Medium Slate */
+            --accent: #2dd4bf;     /* Teal */
+            --accent-hover: #5eead4;
+            --text-primary: #f9fafb; /* Off-white */
+            --text-secondary: #d1d5db; /* Light Gray */
+            --border-color: #4b5563;
         }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'Inter', sans-serif; background-color: var(--background);
-            color: var(--text-primary); min-height: 100vh; display: flex;
-            justify-content: center; align-items: center; padding: 20px;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
+
         .chat-container {
-            background: var(--surface-1); border: 1px solid var(--border-color);
-            border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            width: 100%; max-width: 800px; height: 85vh; min-height: 700px;
-            display: flex; flex-direction: column; overflow: hidden; position: relative;
+            background: var(--surface-1);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            width: 100%;
+            max-width: 800px;
+            height: 85vh;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
         }
-        .view {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--surface-1); display: flex; flex-direction: column;
-            align-items: center; padding: 40px 20px;
-            transition: opacity 0.5s ease, visibility 0.5s; overflow-y: auto;
-        }
-        .view.hidden { opacity: 0; visibility: hidden; }
-        .login-view, .onboarding-view { justify-content: center; }
-        .main-app-view { justify-content: flex-start; padding: 0; }
-        .form-container { width: 100%; max-width: 400px; text-align: center; }
-        .form-container h2 { font-size: 2.5em; font-weight: 700; color: var(--text-primary); }
-        .form-container p { font-size: 1.1em; color: var(--text-secondary); margin-top: 0.5rem; margin-bottom: 2.5rem; }
-        .input-group { margin-bottom: 1.5rem; text-align: left; }
-        .input-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
-        .form-input, .form-select {
-            width: 100%; padding: 14px 18px; border: 1px solid var(--border-color);
-            background-color: var(--surface-2); color: var(--text-primary);
-            border-radius: 12px; font-size: 1em; font-family: inherit;
-        }
-        .form-input:focus, .form-select:focus { outline: none; border-color: var(--accent); }
-        .submit-btn {
-            width: 100%; background-color: var(--accent); color: var(--background);
-            border: none; padding: 16px; border-radius: 12px; font-size: 1.1em;
-            font-weight: 600; cursor: pointer; transition: all 0.3s ease;
-        }
-        .submit-btn:hover { background-color: var(--accent-hover); }
-        .onboarding-step { display: none; }
-        .onboarding-step.active { display: block; animation: fadeIn 0.5s ease; }
-        .nav-buttons { display: flex; justify-content: space-between; margin-top: 2rem; }
-        .nav-btn {
-            background-color: var(--surface-2); color: var(--text-primary);
-            border: 1px solid var(--border-color); padding: 12px 24px;
-            border-radius: 12px; font-size: 1em; font-weight: 500; cursor: pointer;
-        }
-        .chat-header, .menu-overlay, .chat-view { position: static; height: 100%; width: 100%; }
-        .chat-container > .chat-view { flex-grow: 1; }
+
         .menu-overlay {
-            position: absolute; top: 0; left: 0;
-            background: rgba(17, 24, 39, 0.9); backdrop-filter: blur(8px);
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            transition: opacity 0.5s ease, visibility 0.5s;
+            overflow-y: auto;
         }
-        .chat-header { border-bottom: 1px solid var(--border-color); height: auto; }
-        .chat-messages { flex: 1; }
-        .message { padding: 12px 20px; border-radius: 20px; line-height: 1.6; }
-        .user-message { background-color: var(--accent); color: var(--background); align-self: flex-end; border-bottom-right-radius: 5px;}
-        .ai-message { background: var(--surface-2); align-self: flex-start; border-bottom-left-radius: 5px;}
-        .chat-input-container { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); height: auto; }
+
+        .menu-overlay#mainMenu { justify-content: center; }
+        .menu-overlay.hidden { opacity: 0; visibility: hidden; }
+
+        .menu-title { font-size: 2.25em; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; }
+        .menu-subtitle { font-size: 1.1em; font-weight: 400; color: var(--text-secondary); margin-bottom: 40px; }
+        .menu-options { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
+        
+        .menu-btn {
+            background-color: var(--surface-2);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+        }
+
+        .menu-btn:hover {
+            background-color: var(--accent);
+            color: var(--background);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(45, 212, 191, 0.2), 0 4px 6px -2px rgba(45, 212, 191, 0.1);
+        }
+
+        .chat-header {
+            background: var(--surface-1);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+            text-align: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .chat-header h1 { font-size: 1.5em; font-weight: 600; }
+        .chat-header p { color: var(--text-secondary); }
+
+        .menu-back-btn {
+            font-size: 1.5em;
+            text-decoration: none;
+            color: var(--text-secondary);
+            padding: 0 15px;
+            transition: color 0.3s ease;
+        }
+        .menu-back-btn:hover { color: var(--accent-hover); }
+
+        .chat-view { display: flex; flex-direction: column; height: 100%; visibility: hidden; }
+        .chat-view.active { visibility: visible; }
+
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .message { max-width: 80%; padding: 12px 20px; border-radius: 20px; line-height: 1.6; animation: fadeIn 0.5s ease; }
+        
+        .user-message {
+            align-self: flex-end;
+            background-color: var(--accent);
+            color: var(--background);
+            font-weight: 500;
+            border-bottom-right-radius: 5px;
+        }
+
+        .ai-message {
+            align-self: flex-start;
+            background: var(--surface-2);
+            color: var(--text-primary);
+            border-bottom-left-radius: 5px;
+        }
+
+        .chat-input-container {
+            padding: 1rem 1.5rem;
+            background: var(--surface-1);
+            border-top: 1px solid var(--border-color);
+        }
         .chat-input-form { display: flex; gap: 10px; align-items: flex-end; }
+        
         .chat-input {
-            flex: 1; padding: 14px 20px; border: 1px solid var(--border-color);
-            background-color: var(--surface-2); color: var(--text-primary);
-            border-radius: 16px; font-size: 1em; resize: none; min-height: 52px;
+            flex: 1;
+            padding: 14px 20px;
+            border: 1px solid var(--border-color);
+            background-color: var(--surface-2);
+            color: var(--text-primary);
+            border-radius: 16px;
+            font-size: 1em;
+            resize: none;
+            min-height: 52px;
+            max-height: 120px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s ease;
         }
+        .chat-input:focus { border-color: var(--accent); }
+
         .send-btn, .voice-btn {
-            background-color: var(--accent); color: var(--background); border-radius: 50%;
-            width: 52px; height: 52px; display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; border: none; cursor: pointer;
+            background-color: var(--accent);
+            color: var(--background);
+            border: none;
+            border-radius: 50%;
+            width: 52px;
+            height: 52px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
+        .send-btn:hover, .voice-btn:hover { background-color: var(--accent-hover); transform: scale(1.1); }
         .voice-btn { background-color: var(--surface-2); color: var(--text-secondary); }
-        .voice-btn.recording { background: #ef4444; animation: recordingPulse 1.2s infinite; }
-        .insights-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .insight-card { background: var(--surface-2); border: 1px solid var(--border-color); padding: 20px; border-radius: 16px; }
-        .insight-card h3 { color: var(--accent); }
+        .voice-btn.recording { background: #ef4444; color: white; animation: recordingPulse 1.2s infinite; }
+        .voice-status { font-size: 0.8em; color: var(--text-secondary); margin-top: 5px; text-align: center; min-height: 20px; }
+
+        .dashboard-header { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-top: 10px; }
+        .dashboard-header .menu-title { margin: 0; flex-grow: 1; }
+        
+        .insights-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 900px; margin-top: 20px; }
+        
+        .insight-card {
+            background: var(--surface-2);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+        .insight-card h3 { margin-bottom: 15px; text-align: center; color: var(--accent); font-weight: 600; }
+        
         .summary-card, .daily-summary-card, .goals-card { grid-column: 1 / -1; }
-        .chart-wrapper { height: 280px; }
-        #insightsSummaryList { list-style: none; padding-left: 0; }
+        
+        .chart-wrapper { position: relative; height: 280px; width: 100%; }
+        
+        .goals-list, #insightsSummaryList { list-style: none; padding-left: 0; text-align: left; }
         #insightsSummaryList li { background-color: var(--surface-1); border-left: 4px solid var(--accent); padding: 12px; margin-bottom: 8px; border-radius: 8px; }
-        .goals-list li { background-color: var(--surface-1); border-left: 4px solid var(--accent-hover); }
+        .goals-list li { background-color: var(--surface-1); border-left: 4px solid var(--accent-hover); padding: 12px; margin-bottom: 8px; border-radius: 8px; }
+        
         #dailyComparisonSummaryText, #insightsSummaryHeader { font-size: 1.1em; line-height: 1.6; color: var(--text-secondary); }
+        #insightsSummaryHeader { margin-bottom: 1rem; }
+
+        .typing-indicator .ai-message {
+            animation: fadeIn 0.5s ease;
+        }
+        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes recordingPulse { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } }
     </style>
 </head>
 <body>
     <div class="chat-container">
+        <!-- Main Menu -->
+        <div class="menu-overlay" id="mainMenu">
+            <h2 class="menu-title">Asha</h2>
+            <p class="menu-subtitle">Your personal wellness space. How can I help you today?</p>
+            <div class="menu-options">
+                <button class="menu-btn" onclick="showSubMenu('topicMenuContainer')">Talk About Something</button>
+                <button class="menu-btn" onclick="showSubMenu('exerciseMenuContainer')">Try a Guided Exercise</button>
+                <button class="menu-btn" data-topic="goal_setting" onclick="startSession('goal_setting')">Set a New Goal</button>
+                <button class="menu-btn" onclick="getInsights()">Review My Insights</button>
+            </div>
+        </div>
+        
+        <!-- Topic Sub-Menu -->
+        <div class="menu-overlay hidden" id="topicMenuContainer">
+            <div class="dashboard-header">
+                 <a href="#" onclick="showMainMenu()" class="menu-back-btn">&#x2190;</a>
+                 <h2 class="menu-title">What would you like to focus on?</h2>
+                 <span style="width: 40px;"></span>
+            </div>
+            <div class="menu-options" id="topicMenu">
+                <button class="menu-btn" data-topic="work_school">Work or School</button>
+                <button class="menu-btn" data-topic="relationships">Relationships</button>
+                <button class="menu-btn" data-topic="family">Family</button>
+                <button class="menu-btn" data-topic="personal_growth">Personal Growth</button>
+                <button class="menu-btn" data-topic="anxiety">Anxiety</button>
+                <button class="menu-btn" data-topic="general">Just Venting</button>
+            </div>
+        </div>
+        
+        <!-- Exercise Sub-Menu -->
+        <div class="menu-overlay hidden" id="exerciseMenuContainer">
+            <div class="dashboard-header">
+                <a href="#" onclick="showMainMenu()" class="menu-back-btn">&#x2190;</a>
+                <h2 class="menu-title">Which exercise would you like to try?</h2>
+                <span style="width: 40px;"></span>
+            </div>
+            <div class="menu-options" id="exerciseMenu">
+                <button class="menu-btn" data-topic="cognitive_reframing">Cognitive Reframing</button>
+                <button class="menu-btn" data-topic="three_good_things">Three Good Things</button>
+            </div>
+        </div>
 
-        <!-- Login View -->
-        <div class="view login-view" id="loginView">
-            <div class="form-container">
-                <h2>Welcome to Asha</h2>
-                <p>Your personal space to reflect and grow. Let's start with your name.</p>
-                <form id="loginForm">
-                    <div class="input-group">
-                        <label for="nameInput">What should I call you?</label>
-                        <input type="text" id="nameInput" class="form-input" required>
+        <!-- Main Chat Area -->
+        <div class="chat-view" id="chatView">
+            <div class="chat-header">
+                <a href="#" class="menu-back-btn" onclick="confirmEndSession()">&#x2190;</a>
+                <h1>Asha</h1>
+                <p>Your compassionate AI companion</p>
+            </div>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="ai-message">Asha is thinking...</div>
+            </div>
+            <div class="chat-input-container">
+                <div class="voice-status" id="voiceStatus"></div>
+                <form class="chat-input-form" id="chatForm" onsubmit="sendMessage(event)">
+                    <textarea class="chat-input" id="messageInput" placeholder="Type your message..." rows="1" oninput="autoResize(this)" onkeydown="handleKeyDown(event)"></textarea>
+                    <button type="button" class="voice-btn" id="voiceBtn" onclick="toggleVoiceRecording()">
+                        <svg id="voiceIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line></svg>
+                    </button>
+                    <button type="submit" class="send-btn" id="sendBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Insights Dashboard View -->
+        <div class="menu-overlay hidden" id="insightsView">
+            <div class="dashboard-header">
+                <a href="#" onclick="showMainMenu()" class="menu-back-btn">&larr; Back to Menu</a>
+                <h2 class="menu-title">Your Insights Dashboard</h2>
+                <span style="width: 40px;"></span>
+            </div>
+            <div class="insights-grid">
+                <div class="insight-card summary-card">
+                    <h3>A Gentle Reflection</h3>
+                    <div id="insightsSummaryContainer">
+                        <p id="insightsSummaryHeader"></p>
+                        <ul id="insightsSummaryList"></ul>
                     </div>
-                    <button type="submit" class="submit-btn">Continue</button>
-                </form>
+                </div>
+
+                <div class="insight-card daily-summary-card">
+                    <h3>Your Daily Journey</h3>
+                    <p id="dailyComparisonSummaryText"></p>
+                </div>
+                
+                <div class="insight-card">
+                    <h3>Overall Emotion Distribution</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="emotionChart"></canvas>
+                    </div>
+                </div>
+                <div class="insight-card">
+                    <h3>Overall Topic Focus</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="topicChart"></canvas>
+                    </div>
+                </div>
+                <div class="insight-card goals-card">
+                    <h3>Your Active Goals</h3>
+                    <ul id="activeGoalsList" class="goals-list"></ul>
+                </div>
             </div>
         </div>
-
-        <!-- Onboarding View -->
-        <div class="view onboarding-view hidden" id="onboardingView">
-            <div class="form-container">
-                <form id="onboardingForm">
-                    <!-- Steps will be injected here by JavaScript -->
-                </form>
-            </div>
-        </div>
-
-        <!-- Main App View (initially hidden) -->
-        <div class="view main-app-view hidden" id="mainAppView">
-            <!-- Main App HTML will be injected here -->
-        </div>
-
     </div>
 
     <script>
-        const loginView = document.getElementById('loginView');
-        const onboardingView = document.getElementById('onboardingView');
-        const mainAppView = document.getElementById('mainAppView');
-        const loginForm = document.getElementById('loginForm');
-        const onboardingForm = document.getElementById('onboardingForm');
-        const nameInput = document.getElementById('nameInput');
+        // --- DOM Element Selectors ---
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const mainMenu = document.getElementById('mainMenu');
+        const insightsView = document.getElementById('insightsView');
+        const topicMenu = document.getElementById('topicMenu');
+        const exerciseMenu = document.getElementById('exerciseMenu');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const chatView = document.getElementById('chatView');
+        const topicMenuContainer = document.getElementById('topicMenuContainer');
+        const exerciseMenuContainer = document.getElementById('exerciseMenuContainer');
+        const sendBtn = document.getElementById('sendBtn');
+        const voiceBtn = document.getElementById('voiceBtn');
+        const voiceIcon = document.getElementById('voiceIcon');
+        const voiceStatus = document.getElementById('voiceStatus');
 
-        let currentStep = 1;
-        let currentUserName = '';
-        let emotionChart, topicChart;
-        let recognition, isRecording = false, isAISpeaking = false;
+        // --- Chart & Speech State ---
+        let emotionChart = null;
+        let topicChart = null;
+        let recognition = null;
+        let isRecording = false;
+        let isAISpeaking = false;
 
-        function getOnboardingStepHTML(step) {
-            if (step === 1) {
-                return `
-                    <div class="onboarding-step active" id="step1">
-                        <h2>Just a few questions...</h2>
-                        <p>This will help me understand your world a little better.</p>
-                        <div class="input-group">
-                            <label for="ageInput">Age</label>
-                            <input type="number" id="ageInput" class="form-input" required>
-                        </div>
-                        <div class="input-group">
-                            <label for="genderInput">Gender</label>
-                            <select id="genderInput" class="form-select">
-                                <option>Male</option><option>Female</option><option>Non-binary</option><option>Prefer not to say</option>
-                            </select>
-                        </div>
-                        <div class="nav-buttons">
-                            <span></span>
-                            <button type="button" class="nav-btn" onclick="nextStep(2)">Next &rarr;</button>
-                        </div>
-                    </div>`;
-            }
-            if (step === 2) {
-                return `
-                    <div class="onboarding-step active" id="step2">
-                        <h2>Tell me about your life.</h2>
-                        <p>Understanding your daily context is helpful.</p>
-                         <div class="input-group">
-                            <label for="maritalStatusInput">Marital Status</label>
-                            <select id="maritalStatusInput" class="form-select">
-                                <option>Single</option><option>In a relationship</option><option>Married</option><option>Divorced</option><option>Widowed</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label for="employmentInput">Are you currently...</label>
-                            <select id="employmentInput" class="form-select">
-                                <option>Working</option><option>A Student</option><option>Both</option><option>Neither</option>
-                            </select>
-                        </div>
-                        <div class="nav-buttons">
-                            <button type="button" class="nav-btn" onclick="nextStep(1)">&larr; Back</button>
-                            <button type="button" class="nav-btn" onclick="nextStep(3)">Next &rarr;</button>
-                        </div>
-                    </div>`;
-            }
-            if (step === 3) {
-                return `
-                    <div class="onboarding-step active" id="step3">
-                        <h2>Just one last thing.</h2>
-                        <p>Where in the world are you?</p>
-                        <div class="input-group">
-                            <label for="countryInput">Country</label>
-                            <input type="text" id="countryInput" class="form-input" required>
-                        </div>
-                        <div class="nav-buttons">
-                            <button type="button" class="nav-btn" onclick="nextStep(2)">&larr; Back</button>
-                            <button type="submit" class="submit-btn" style="width: auto;">All Done!</button>
-                        </div>
-                    </div>`;
+
+        // --- UI State Management ---
+        function showMainMenu() {
+            mainMenu.classList.remove('hidden');
+            topicMenuContainer.classList.add('hidden');
+            exerciseMenuContainer.classList.add('hidden');
+            chatView.classList.remove('active');
+            insightsView.classList.add('hidden');
+            if(chatMessages) chatMessages.innerHTML = ''; 
+        }
+        
+        function confirmEndSession() {
+            if (window.confirm("Are you sure you want to end this session and return to the main menu?")) {
+                showMainMenu();
             }
         }
 
-        function getMainAppHTML() {
-            return `
-                <div class="menu-overlay" id="mainMenu">
-                    <h2 class="menu-title">Asha</h2>
-                    <p class="menu-subtitle">Your personal wellness space. How can I help you today?</p>
-                    <div class="menu-options">
-                        <button class="menu-btn" onclick="showSubMenu('topicMenuContainer')">Talk About Something</button>
-                        <button class="menu-btn" onclick="showSubMenu('exerciseMenuContainer')">Try a Guided Exercise</button>
-                        <button class="menu-btn" data-topic="goal_setting" onclick="startSession('goal_setting')">Set a New Goal</button>
-                        <button class="menu-btn" onclick="getInsights()">Review My Insights</button>
-                    </div>
-                </div>
-                <div class="menu-overlay hidden" id="topicMenuContainer">
-                    <div class="dashboard-header">
-                        <a href="#" onclick="showMainMenu()" class="menu-back-btn">&larr;</a>
-                        <h2 class="menu-title">What would you like to focus on?</h2>
-                        <span style="width: 40px;"></span>
-                    </div>
-                    <div class="menu-options" id="topicMenu">
-                        <button class="menu-btn" data-topic="work_school">Work or School</button>
-                        <button class="menu-btn" data-topic="relationships">Relationships</button>
-                        <button class="menu-btn" data-topic="family">Family</button>
-                        <button class="menu-btn" data-topic="personal_growth">Personal Growth</button>
-                        <button class="menu-btn" data-topic="anxiety">Anxiety</button>
-                        <button class="menu-btn" data-topic="general">Just Venting</button>
-                    </div>
-                </div>
-                <div class="menu-overlay hidden" id="exerciseMenuContainer">
-                    <div class="dashboard-header">
-                        <a href="#" onclick="showMainMenu()" class="menu-back-btn">&larr;</a>
-                        <h2 class="menu-title">Which exercise would you like to try?</h2>
-                        <span style="width: 40px;"></span>
-                    </div>
-                    <div class="menu-options" id="exerciseMenu">
-                        <button class="menu-btn" data-topic="cognitive_reframing">Cognitive Reframing</button>
-                        <button class="menu-btn" data-topic="three_good_things">Three Good Things</button>
-                    </div>
-                </div>
-                <div class="chat-view" id="chatView">
-                    <div class="chat-header">
-                        <a href="#" class="menu-back-btn" onclick="confirmEndSession()">&#x2190;</a>
-                        <h1>Asha</h1>
-                        <p>Your compassionate AI companion</p>
-                    </div>
-                    <div class="chat-messages" id="chatMessages"></div>
-                    <div class="typing-indicator" id="typingIndicator"><div class="ai-message">Asha is thinking...</div></div>
-                    <div class="chat-input-container">
-                        <div class="voice-status" id="voiceStatus"></div>
-                        <form class="chat-input-form" id="chatForm">
-                            <textarea class="chat-input" id="messageInput" placeholder="Type your message..." rows="1"></textarea>
-                            <button type="button" class="voice-btn" id="voiceBtn"><svg id="voiceIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line></svg></button>
-                            <button type="submit" class="send-btn" id="sendBtn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button>
-                        </form>
-                    </div>
-                </div>
-                <div class="menu-overlay hidden" id="insightsView">
-                     <div class="dashboard-header">
-                        <a href="#" onclick="showMainMenu()" class="menu-back-btn">&larr;</a>
-                        <h2 class="menu-title">Your Insights Dashboard</h2>
-                        <span style="width: 40px;"></span>
-                    </div>
-                    <div class="insights-grid">
-                        <div class="insight-card summary-card">
-                            <h3>A Gentle Reflection</h3>
-                            <div id="insightsSummaryContainer">
-                                <p id="insightsSummaryHeader"></p>
-                                <ul id="insightsSummaryList"></ul>
-                            </div>
-                        </div>
-                        <div class="insight-card daily-summary-card">
-                            <h3>Your Daily Journey</h3>
-                            <p id="dailyComparisonSummaryText"></p>
-                        </div>
-                        <div class="insight-card">
-                            <h3>Overall Emotion Distribution</h3>
-                            <div class="chart-wrapper"><canvas id="emotionChart"></canvas></div>
-                        </div>
-                        <div class="insight-card">
-                            <h3>Overall Topic Focus</h3>
-                            <div class="chart-wrapper"><canvas id="topicChart"></canvas></div>
-                        </div>
-                        <div class="insight-card goals-card">
-                            <h3>Your Active Goals</h3>
-                            <ul id="activeGoalsList" class="goals-list"></ul>
-                        </div>
-                    </div>
-                </div>
-            `;
+        function showSubMenu(menuId) {
+            mainMenu.classList.add('hidden');
+            document.getElementById(menuId).classList.remove('hidden');
         }
 
-        function initializeMainApp() {
-            const chatMessages = document.getElementById('chatMessages');
-            const messageInput = document.getElementById('messageInput');
-            const mainMenu = document.getElementById('mainMenu');
-            const insightsView = document.getElementById('insightsView');
-            const topicMenu = document.getElementById('topicMenu');
-            const exerciseMenu = document.getElementById('exerciseMenu');
-            const typingIndicator = document.getElementById('typingIndicator');
-            const chatView = document.getElementById('chatView');
-            const topicMenuContainer = document.getElementById('topicMenuContainer');
-            const exerciseMenuContainer = document.getElementById('exerciseMenuContainer');
-            const sendBtn = document.getElementById('sendBtn');
-            const voiceBtn = document.getElementById('voiceBtn');
-            const voiceStatus = document.getElementById('voiceStatus');
-            const chatForm = document.getElementById('chatForm');
-
-            window.showMainMenu = () => {
-                mainMenu.classList.remove('hidden');
-                topicMenuContainer.classList.add('hidden');
-                exerciseMenuContainer.classList.add('hidden');
-                chatView.classList.remove('active');
-                insightsView.classList.add('hidden');
-                chatMessages.innerHTML = ''; 
-            };
-            window.confirmEndSession = () => {
-                if (window.confirm("Are you sure you want to end this session?")) {
-                    showMainMenu();
-                }
-            };
-            window.showSubMenu = (menuId) => {
-                mainMenu.classList.add('hidden');
-                document.getElementById(menuId).classList.remove('hidden');
-            };
-            window.showChatView = () => {
-                mainMenu.classList.add('hidden');
-                topicMenuContainer.classList.add('hidden');
-                exerciseMenuContainer.classList.add('hidden');
-                insightsView.classList.add('hidden');
-                chatView.classList.add('active');
-                messageInput.focus();
-            };
-
-            window.startSession = async (topic) => {
-                showChatView();
-                showTyping();
-                chatMessages.innerHTML = '';
-                try {
-                    const response = await fetch('/start_session', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ topic: topic })
-                    });
-                    const data = await response.json();
-                    hideTyping();
-                    if (response.ok) {
-                        if (data.history) data.history.forEach(msg => addMessage(msg.parts[0], msg.role === 'user', false));
-                        if (data.initial_message) addMessage(data.initial_message, false, true);
-                    } else { addMessage(data.error || "Sorry, an error occurred.", false, true); }
-                } catch (error) { hideTyping(); addMessage("Connection error.", false, true); }
-            };
-            window.sendMessage = async (event) => {
-                if (event) event.preventDefault();
-                const message = messageInput.value.trim();
-                if (!message) return;
-                addMessage(message, true, false);
-                messageInput.value = '';
-                autoResize(messageInput);
-                showTyping();
-                sendBtn.disabled = true; voiceBtn.disabled = true;
-                try {
-                    const response = await fetch('/send_message', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message: message })
-                    });
-                    const data = await response.json();
-                    if (response.ok) addMessage(data.response, false, true);
-                    else addMessage(data.error || 'An error occurred.', false, true);
-                } catch (error) { addMessage('Connection error.', false, true); }
-                finally { hideTyping(); sendBtn.disabled = false; voiceBtn.disabled = false; }
-            };
-            window.getInsights = async () => {
-                showTypingInMenu();
-                try {
-                    const response = await fetch('/get_insights');
-                    const data = await response.json();
-                    hideTypingInMenu();
-                    if (data.error) { alert(data.error); return; }
-                    
-                    const summaryHeader = document.getElementById('insightsSummaryHeader');
-                    const summaryList = document.getElementById('insightsSummaryList');
-                    summaryList.innerHTML = '';
-                    const summaryParts = data.summary.split('*');
-                    if(summaryHeader) summaryHeader.textContent = summaryParts.shift().trim();
-                    summaryParts.forEach(point => {
-                        if(point.trim()) {
-                            const li = document.createElement('li');
-                            li.textContent = point.trim();
-                            summaryList.appendChild(li);
-                        }
-                    });
-
-                    document.getElementById('dailyComparisonSummaryText').textContent = data.daily_comparison_summary;
-                    
-                    const goalsList = document.getElementById('activeGoalsList');
-                    goalsList.innerHTML = '';
-                    if (data.active_goals && data.active_goals.length > 0) {
-                        data.active_goals.forEach(goal => {
-                            const li = document.createElement('li');
-                            li.textContent = goal.goal_description;
-                            goalsList.appendChild(li);
-                        });
-                    } else { goalsList.innerHTML = '<li>You have no active goals set.</li>'; }
-
-                    renderOverallEmotionChart(data.charts.emotion_distribution);
-                    renderTopicFocusChart(data.charts.topic_distribution);
-                    
-                    mainMenu.classList.add('hidden');
-                    insightsView.classList.remove('hidden');
-                } catch (error) { hideTypingInMenu(); console.error("Error getting insights:", error); alert("Could not fetch insights."); }
-            };
-            
-            function renderOverallEmotionChart(chartData) { /* ... */ }
-            function renderTopicFocusChart(chartData) { /* ... */ }
-            
-            function addMessage(content, isUser, shouldSpeak) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
-                messageDiv.innerText = content;
-                messageDiv.innerHTML = messageDiv.innerHTML.replace(/\n/g, '<br>');
-                chatMessages.appendChild(messageDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                if(shouldSpeak && !isUser && 'speechSynthesis' in window) {
-                    const utterance = new SpeechSynthesisUtterance(content);
-                    utterance.onstart = () => { isAISpeaking = true; if(voiceBtn) voiceBtn.disabled = true; };
-                    utterance.onend = () => { isAISpeaking = false; if(voiceBtn && !isRecording) voiceBtn.disabled = false; };
-                    speechSynthesis.speak(utterance);
-                }
-            }
-            function showTypingInMenu() { /* ... */ }
-            function hideTypingInMenu() { /* ... */ }
-            function showTyping() { typingIndicator.style.display = 'flex'; chatMessages.scrollTop = chatMessages.scrollHeight; }
-            function hideTyping() { typingIndicator.style.display = 'none'; }
-            window.autoResize = (textarea) => { textarea.style.height = 'auto'; textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px'; };
-            window.handleKeyDown = (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(event); } };
-            
-            function initSpeechRecognition() {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (!SpeechRecognition) { if(voiceBtn) voiceBtn.style.display = 'none'; return; }
-                recognition = new SpeechRecognition();
-                recognition.continuous = false; recognition.interimResults = true; recognition.lang = 'en-US';
-                recognition.onstart = () => { isRecording = true; voiceBtn.classList.add('recording'); voiceStatus.textContent = 'Listening...'; sendBtn.disabled = true; };
-                recognition.onresult = (e) => { messageInput.value = Array.from(e.results).map(r => r[0].transcript).join(''); autoResize(messageInput); };
-                recognition.onend = () => { isRecording = false; voiceBtn.classList.remove('recording'); voiceStatus.textContent = ''; sendBtn.disabled = false; if (messageInput.value.trim()) sendMessage(); };
-                recognition.onerror = (e) => { voiceStatus.textContent = 'Error: ' + e.error; };
-            }
-            window.toggleVoiceRecording = () => {
-                if (isRecording) { if(recognition) recognition.stop(); }
-                else if (!isAISpeaking) {
-                    if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
-                    try { if(recognition) recognition.start(); }
-                    catch (error) { if(voiceStatus) voiceStatus.textContent = 'Mic access needed.'; }
-                }
-            };
-            initSpeechRecognition();
-
-            if(topicMenu) topicMenu.addEventListener('click', (e) => { if(e.target.tagName === 'BUTTON') startSession(e.target.dataset.topic); });
-            if(exerciseMenu) exerciseMenu.addEventListener('click', (e) => { if(e.target.tagName === 'BUTTON') startSession(e.target.dataset.topic); });
-            if(chatForm) chatForm.addEventListener('submit', sendMessage);
+        function showChatView() {
+            mainMenu.classList.add('hidden');
+            topicMenuContainer.classList.add('hidden');
+            exerciseMenuContainer.classList.add('hidden');
+            insightsView.classList.add('hidden');
+            chatView.classList.add('active');
+            if(messageInput) messageInput.focus();
         }
 
-        loginForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            currentUserName = nameInput.value.trim();
-            if (currentUserName) {
-                loginView.classList.add('hidden');
-                onboardingView.classList.remove('hidden');
-                onboardingForm.innerHTML = getOnboardingStepHTML(1);
-            }
-        });
-
-        onboardingForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const profileData = {
-                name: currentUserName,
-                age: document.getElementById('ageInput').value,
-                gender: document.getElementById('genderInput').value,
-                marital_status: document.getElementById('maritalStatusInput').value,
-                employment: document.getElementById('employmentInput').value,
-                country: document.getElementById('countryInput').value,
-            };
+        // --- Core Application Logic ---
+        async function startSession(topic) {
+            showChatView();
+            showTyping();
+            chatMessages.innerHTML = '';
 
             try {
-                const response = await fetch('/create_profile', {
+                const response = await fetch('/start_session', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(profileData)
+                    body: JSON.stringify({ topic: topic })
                 });
+                const data = await response.json();
+                hideTyping();
 
                 if (response.ok) {
-                    onboardingView.classList.add('hidden');
-                    mainAppView.innerHTML = getMainAppHTML();
-                    initializeMainApp();
-                    mainAppView.classList.remove('hidden');
-                } else { alert('Error creating profile.'); }
-            } catch (error) { alert('Connection error.'); }
-        });
+                    if (data.history && data.history.length > 0) {
+                        data.history.forEach(message => {
+                            const isUser = message.role === 'user';
+                            addMessage(message.parts[0], isUser, false);
+                        });
+                    }
+                    if (data.initial_message) {
+                        addMessage(data.initial_message, false, true);
+                    }
+                } else {
+                    addMessage(data.error || "Sorry, I had trouble starting.", false, true);
+                }
+            } catch (error) {
+                hideTyping();
+                addMessage("I'm having connection issues. Please try again.", false, true);
+            }
+        }
+
+        async function sendMessage(event) {
+            if (event) event.preventDefault();
+            if (!messageInput) return;
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, true, false);
+            messageInput.value = '';
+            autoResize(messageInput);
+            
+            showTyping();
+            sendBtn.disabled = true;
+            voiceBtn.disabled = true;
+
+            try {
+                const response = await fetch('/send_message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    addMessage(data.response, false, true);
+                } else {
+                    addMessage(data.error || 'An error occurred.', false, true);
+                }
+            } catch (error) {
+                addMessage('I\'m having trouble connecting right now. Please try again.', false, true);
+            } finally {
+                hideTyping();
+                sendBtn.disabled = false;
+                voiceBtn.disabled = false;
+            }
+        }
+
+        async function getInsights() {
+            showTypingInMenu();
+            try {
+                const response = await fetch('/get_insights');
+                const data = await response.json();
+                hideTypingInMenu();
+
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                
+                const summaryHeader = document.getElementById('insightsSummaryHeader');
+                const summaryList = document.getElementById('insightsSummaryList');
+                summaryList.innerHTML = '';
+                const summaryParts = data.summary.split('*');
+                if(summaryHeader) summaryHeader.textContent = summaryParts.shift().trim();
+                summaryParts.forEach(point => {
+                    if(point.trim()) {
+                        const li = document.createElement('li');
+                        li.textContent = point.trim();
+                        summaryList.appendChild(li);
+                    }
+                });
+
+                document.getElementById('dailyComparisonSummaryText').textContent = data.daily_comparison_summary;
+
+                const goalsList = document.getElementById('activeGoalsList');
+                goalsList.innerHTML = '';
+                if (data.active_goals && data.active_goals.length > 0) {
+                    data.active_goals.forEach(goal => {
+                        const li = document.createElement('li');
+                        li.textContent = goal.goal_description;
+                        goalsList.appendChild(li);
+                    });
+                } else {
+                    goalsList.innerHTML = '<li>You have no active goals set.</li>';
+                }
+
+                renderOverallEmotionChart(data.charts.emotion_distribution);
+                renderTopicFocusChart(data.charts.topic_distribution);
+                
+                mainMenu.classList.add('hidden');
+                insightsView.classList.remove('hidden');
+
+            } catch (error) {
+                hideTypingInMenu();
+                console.error("Error getting insights:", error);
+                alert("Sorry, I couldn't fetch your insights right now.");
+            }
+        }
         
+        function renderOverallEmotionChart(chartData) {
+            const ctx = document.getElementById('emotionChart').getContext('2d');
+            if (emotionChart) emotionChart.destroy();
+            emotionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(chartData),
+                    datasets: [{
+                        label: 'Emotion Count',
+                        data: Object.values(chartData),
+                        backgroundColor: ['#ef4444', '#3b82f6', '#facc15', '#2dd4bf', '#a78bfa', '#fb923c'],
+                        borderRadius: 4
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            ticks: { color: '#d1d5db', stepSize: 1 },
+                            grid: { color: '#374151' }
+                        },
+                        x: {
+                            ticks: { color: '#d1d5db' },
+                            grid: { color: '#374151' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTopicFocusChart(chartData) {
+            const ctx = document.getElementById('topicChart').getContext('2d');
+            if (topicChart) topicChart.destroy();
+            topicChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(chartData),
+                    datasets: [{
+                        label: 'Message Count',
+                        data: Object.values(chartData),
+                        backgroundColor: '#2dd4bf',
+                        borderRadius: 4
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            ticks: { color: '#d1d5db' },
+                            grid: { color: '#374151' }
+                        },
+                        x: {
+                            ticks: { color: '#d1d5db', stepSize: 1 },
+                            grid: { color: '#374151' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // --- Helper, UI, and Speech Functions ---
+        function addMessage(content, isUser, shouldSpeak) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+            messageDiv.innerText = content;
+            messageDiv.innerHTML = messageDiv.innerHTML.replace(/\n/g, '<br>');
+            if(chatMessages) chatMessages.appendChild(messageDiv);
+            if(chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+            if(shouldSpeak && !isUser && 'speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(content);
+                utterance.onstart = () => { isAISpeaking = true; if(voiceBtn) voiceBtn.disabled = true; };
+                utterance.onend = () => { isAISpeaking = false; if(voiceBtn && !isRecording) voiceBtn.disabled = false; };
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        function showTypingInMenu() {
+            const insightsBtn = Array.from(document.querySelectorAll('.menu-btn')).find(btn => btn.textContent === 'Review My Insights');
+            if (insightsBtn) insightsBtn.textContent = 'Loading...';
+        }
+        function hideTypingInMenu() {
+            const insightsBtn = Array.from(document.querySelectorAll('.menu-btn')).find(btn => btn.textContent === 'Loading...');
+            if (insightsBtn) insightsBtn.textContent = 'Review My Insights';
+        }
+        function showTyping() { if(typingIndicator) typingIndicator.style.display = 'flex'; if(chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight; }
+        function hideTyping() { if(typingIndicator) typingIndicator.style.display = 'none'; }
+        
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage(event);
+            }
+        }
+
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                if(voiceBtn) voiceBtn.style.display = 'none';
+                return;
+            }
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                isRecording = true;
+                voiceBtn.classList.add('recording');
+                voiceStatus.textContent = 'Listening...';
+                sendBtn.disabled = true;
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = Array.from(event.results).map(r => r[0]).map(r => r.transcript).join('');
+                messageInput.value = transcript;
+                autoResize(messageInput);
+            };
+
+            recognition.onend = () => {
+                isRecording = false;
+                voiceBtn.classList.remove('recording');
+                voiceStatus.textContent = '';
+                sendBtn.disabled = false;
+                if (messageInput.value.trim()) {
+                    sendMessage();
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                voiceStatus.textContent = 'Error: ' + event.error;
+            };
+        }
+
+        function toggleVoiceRecording() {
+            if (isRecording) {
+                if(recognition) recognition.stop();
+            } else if (!isAISpeaking) {
+                if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
+                try {
+                    if(recognition) recognition.start();
+                } catch (error) {
+                    console.error('Error starting recognition:', error);
+                    if(voiceStatus) voiceStatus.textContent = 'Please allow microphone access.';
+                }
+            }
+        }
+        
+        // --- Event Listeners ---
         window.addEventListener('load', () => {
-             onboardingForm.innerHTML = getOnboardingStepHTML(1);
+            initSpeechRecognition();
+            showMainMenu();
         });
+
+        if(topicMenu) {
+            topicMenu.addEventListener('click', (event) => {
+                if (event.target.tagName === 'BUTTON') {
+                    startSession(event.target.dataset.topic);
+                }
+            });
+        }
+
+        if(exerciseMenu) {
+            exerciseMenu.addEventListener('click', (event) => {
+                if (event.target.tagName === 'BUTTON') {
+                    startSession(event.target.dataset.topic);
+                }
+            });
+        }
     </script>
 </body>
 </html>
