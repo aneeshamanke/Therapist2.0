@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asha - Your AI Companion</title>
-    <!-- Google Font: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chart.js for graphing -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -34,6 +32,69 @@
             align-items: center;
             padding: 20px;
         }
+        
+        /* --- START: Added Profile Modal Styles --- */
+        .profile-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(17, 24, 39, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.3s ease;
+        }
+
+        .profile-modal {
+            background: var(--surface-1);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        }
+
+        .profile-modal h2 { font-size: 1.8em; margin-bottom: 10px; }
+        .profile-modal p { color: var(--text-secondary); margin-bottom: 25px; }
+
+        .profile-input {
+            width: 100%;
+            padding: 14px;
+            font-size: 1em;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background-color: var(--surface-2);
+            color: var(--text-primary);
+        }
+        .profile-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.2);
+        }
+
+        .profile-submit-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border-radius: 12px;
+            border: none;
+            background-color: var(--accent);
+            color: var(--background);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .profile-submit-btn:hover { background-color: var(--accent-hover); }
+        .profile-modal-overlay.hidden { display: none; }
+        /* --- END: Added Profile Modal Styles --- */
+
 
         .chat-container {
             background: var(--surface-1);
@@ -215,9 +276,19 @@
     </style>
 </head>
 <body>
+
+    <div class="profile-modal-overlay" id="profileModal">
+        <div class="profile-modal">
+            <form id="profileForm">
+                <h2>Welcome to Asha</h2>
+                <p>To get started, please enter your name. This helps in personalizing your experience.</p>
+                <input type="text" id="nameInput" class="profile-input" placeholder="Enter your name..." required>
+                <button type="submit" class="profile-submit-btn">Continue</button>
+            </form>
+        </div>
+    </div>
     <div class="chat-container">
-        <!-- Main Menu -->
-        <div class="menu-overlay" id="mainMenu">
+        <div class="menu-overlay hidden" id="mainMenu">
             <h2 class="menu-title">Asha</h2>
             <p class="menu-subtitle">Your personal wellness space. How can I help you today?</p>
             <div class="menu-options">
@@ -228,7 +299,6 @@
             </div>
         </div>
         
-        <!-- Topic Sub-Menu -->
         <div class="menu-overlay hidden" id="topicMenuContainer">
             <div class="dashboard-header">
                  <a href="#" onclick="showMainMenu()" class="menu-back-btn">&#x2190;</a>
@@ -245,7 +315,6 @@
             </div>
         </div>
         
-        <!-- Exercise Sub-Menu -->
         <div class="menu-overlay hidden" id="exerciseMenuContainer">
             <div class="dashboard-header">
                 <a href="#" onclick="showMainMenu()" class="menu-back-btn">&#x2190;</a>
@@ -258,7 +327,6 @@
             </div>
         </div>
 
-        <!-- Main Chat Area -->
         <div class="chat-view" id="chatView">
             <div class="chat-header">
                 <a href="#" class="menu-back-btn" onclick="confirmEndSession()">&#x2190;</a>
@@ -283,7 +351,6 @@
             </div>
         </div>
 
-        <!-- Insights Dashboard View -->
         <div class="menu-overlay hidden" id="insightsView">
             <div class="dashboard-header">
                 <a href="#" onclick="showMainMenu()" class="menu-back-btn">&larr; Back to Menu</a>
@@ -340,6 +407,11 @@
         const voiceBtn = document.getElementById('voiceBtn');
         const voiceIcon = document.getElementById('voiceIcon');
         const voiceStatus = document.getElementById('voiceStatus');
+        // --- START: Added Profile Modal Selectors ---
+        const profileModal = document.getElementById('profileModal');
+        const profileForm = document.getElementById('profileForm');
+        const nameInput = document.getElementById('nameInput');
+        // --- END: Added Profile Modal Selectors ---
 
         // --- Chart & Speech State ---
         let emotionChart = null;
@@ -348,6 +420,41 @@
         let isRecording = false;
         let isAISpeaking = false;
 
+        // --- START: Added Profile Handling Logic ---
+        async function handleProfileSubmit(event) {
+            event.preventDefault();
+            const name = nameInput.value.trim();
+            if (!name) return;
+
+            // Simple profile data, can be expanded later
+            const profileData = {
+                name: name,
+                age: "Unknown",
+                gender: "Unknown",
+                marital_status: "Unknown",
+                employment: "Unknown",
+                country: "Unknown"
+            };
+
+            try {
+                const response = await fetch('/create_profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(profileData)
+                });
+
+                if (response.ok) {
+                    profileModal.classList.add('hidden'); // Hide the modal
+                    showMainMenu(); // Show the main application menu
+                } else {
+                    const data = await response.json();
+                    alert(data.error || "Could not create profile.");
+                }
+            } catch (error) {
+                alert("An error occurred. Please check the connection and try again.");
+            }
+        }
+        // --- END: Added Profile Handling Logic ---
 
         // --- UI State Management ---
         function showMainMenu() {
@@ -661,8 +768,14 @@
         // --- Event Listeners ---
         window.addEventListener('load', () => {
             initSpeechRecognition();
-            showMainMenu();
+            // Don't show the main menu immediately; the profile modal is shown first
         });
+        
+        // --- START: Added Profile Form Listener ---
+        if(profileForm) {
+            profileForm.addEventListener('submit', handleProfileSubmit);
+        }
+        // --- END: Added Profile Form Listener ---
 
         if(topicMenu) {
             topicMenu.addEventListener('click', (event) => {

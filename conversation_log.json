@@ -522,5 +522,135 @@
                 "It sounds like you feel a lack of connection and mutual respect in your relationship with your roommate.  That's a difficult situation to be in, and it's understandable that you're feeling indifferent to her well-being, given how she's treated you.  It's valid to feel this way when your boundaries haven't been respected.\n\nWhat are your thoughts on how to move forward?  Are you considering finding a new living situation? Or are there other options you're exploring to improve the situation, even if it's just managing your interactions with her more effectively?  It might be helpful to consider what kind of living situation would feel more supportive of your needs and well-being.\n"
             ]
         }
-    ]
+    ],
+    "Aneesha": {
+        "relationships": [
+            {
+                "parts": [
+                    "Hi Aneesha, we can start whenever you're ready."
+                ],
+                "role": "model"
+            },
+            {
+                "role": "user",
+                "parts": [
+                    "hi"
+                ],
+                "emotion": "Neutral",
+                "timestamp": "2025-07-01T22:49:46.890482"
+            },
+            {
+                "role": "model",
+                "parts": [
+                    "Hi Aneesha.  It sounds like you're ready to talk about relationships. That's a really important area of life, and I'm here to listen without judgment. What's on your mind today?  Is there a specific relationship, or type of relationship, you'd like to explore?\n"
+                ]
+            }
+        ],
+        "goal_setting": [
+            {
+                "parts": [
+                    "Aneesha, it's wonderful to be working with you today. Let's set a clear and achievable goal together.  To start, what is one specific goal you'd like to work towards?\n"
+                ],
+                "role": "model"
+            },
+            {
+                "emotion": "Neutral",
+                "parts": [
+                    "hi"
+                ],
+                "role": "user",
+                "timestamp": "2025-07-01T22:51:12.614521"
+            },
+            {
+                "parts": [
+                    "Hi Aneesha!  It's wonderful to be working with you today. Let's set a clear and achievable goal together. To start, what is one specific goal you'd like to work towards?\n"
+                ],
+                "role": "model"
+            },
+            {
+                "emotion": "Neutral",
+                "parts": [
+                    "short term is building my website personal"
+                ],
+                "role": "user",
+                "timestamp": "2025-07-01T22:51:43.584586"
+            },
+            {
+                "parts": [
+                    "That's a great goal, Aneesha. How will you measure your progress to know you're on track?\n"
+                ],
+                "role": "model"
+            },
+            {
+                "emotion": "Neutral",
+                "parts": [
+                    "but checking everyday how much its being built by me"
+                ],
+                "role": "user",
+                "timestamp": "2025-07-01T22:52:08.612575"
+            },
+            {
+                "parts": [
+                    "That sounds like a good way to track your progress, Aneesha. Thinking about your current situation, what makes this goal feel achievable for you? What could be a small first step?\n"
+                ],
+                "role": "model"
+            },
+            {
+                "emotion": "Joy",
+                "parts": [
+                    "it can be achieved as i am working towards it"
+                ],
+                "role": "user",
+                "timestamp": "2025-07-01T22:52:34.546891"
+            },
+            {
+                "parts": [
+                    "That's a positive outlook, Aneesha.  Could you share why this particular goal is important to you right now?\n"
+                ],
+                "role": "model"
+            },
+            {
+                "emotion": "Neutral",
+                "parts": [
+                    "want to improve my profile"
+                ],
+                "role": "user",
+                "timestamp": "2025-07-01T22:52:47.136817"
+            },
+            {
+                "parts": [
+                    "That sounds like a valuable reason, Aneesha. Finally, what's a realistic timeframe you'd like to set for achieving this?\n"
+                ],
+                "role": "model"
+            },
+            {
+                "emotion": "Neutral",
+                "parts": [
+                    "1 week"
+                ],
+                "role": "user",
+                "timestamp": "2025-07-01T22:57:46.796620"
+            },
+            {
+                "parts": [
+                    "Thank you for sharing that. I've saved this goal for you so we can check in on it later. You've taken a wonderful first step!\n\nHere's a gentle reflection on the goal we've set:  Building a personal website in one week is an ambitious goal, Aneesha, and it's fantastic that you're motivated to improve your online profile!  A week might be a tight timeframe depending on your existing web design skills and the complexity of the site you envision.  Consider breaking the project into smaller, daily tasks to make it more manageable and less overwhelming. Remember to celebrate each milestone you reach along the way!\n"
+                ],
+                "role": "model"
+            },
+            {
+                "role": "user",
+                "parts": [
+                    "thanks"
+                ],
+                "emotion": "Joy",
+                "timestamp": "2025-07-01T22:58:18.138631"
+            },
+            {
+                "role": "model",
+                "parts": [
+                    "You're very welcome, Aneesha. Is there anything else we can work on today?\n"
+                ]
+            }
+        ]
+    }
 }

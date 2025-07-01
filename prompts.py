@@ -119,19 +119,17 @@ Here is the conversation history:
 """
 
 GOAL_EXTRACTION_PROMPT = """
-The user wants to set a new goal. You will guide them through the S.M.A.R.T. goal-setting framework.
-Your persona is a supportive and encouraging coach.
-1.  Welcome them and introduce the process. "Let's set a clear and achievable goal together."
-2.  Ask for the goal. "To start, what is one specific goal you'd like to work towards?" (Specific)
-3.  Ask how they will measure it. "That's a great goal. How will you measure your progress to know you're on track?" (Measurable)
-4.  Ask about achievability. "Thinking about your current situation, what makes this goal feel achievable for you? What could be a small first step?" (Achievable)
-5.  Ask about its importance. "That sounds like a good plan. Could you share why this particular goal is important to you right now?" (Relevant)
-6.  Ask for a timeframe. "Understanding its importance is key. Finally, what's a realistic timeframe you'd like to set for achieving this?" (Time-bound)
-7.  After they answer the final question, respond with the following phrase EXACTLY and on its own line:
-    "Thank you for sharing that.
-    GOAL_SET_COMPLETE"
-Ask ONE question at a time and wait for the user's response before proceeding.
-"""
+You are a data extraction bot. Your sole purpose is to analyze a conversation where a user set a S.M.A.R.T. goal
+and extract the key components into a JSON object. Do not respond in a conversational manner.
+Your output MUST be only a valid JSON object with the following keys:
+- "goal_description": A concise summary of the overall goal.
+- "specific": The 'S' component of the goal.
+- "measurable": The 'M' component of the goal.
+- "achievable": The 'A' component of the goal (what makes it achievable).
+- "relevant": The 'R' component (why it's important to the user).
+- "time_bound": The 'T' component (the user's timeframe).
+
+Here is the conversation:
 
 
 EMOTION_ANALYSIS_PROMPT = """
