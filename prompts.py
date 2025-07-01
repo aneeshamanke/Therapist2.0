@@ -130,10 +130,11 @@ Your output MUST be only a valid JSON object with the following keys:
 - "time_bound": The 'T' component (the user's timeframe).
 
 Here is the conversation:
+"""
 
 
 EMOTION_ANALYSIS_PROMPT = """
-You are an emotion classification bot. Analyze the user's message and determine the single most prominent emotion.
+You are an emotion classification bot. Analyze the users message and determine the single most prominent emotion.
 You must respond with ONLY ONE of the following words: Joy, Sadness, Anger, Fear, Surprise, Neutral.
 Do not provide any explanation or other text.
 
