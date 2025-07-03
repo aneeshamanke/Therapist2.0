@@ -651,6 +651,36 @@
                     "You're very welcome, Aneesha. Is there anything else we can work on today?\n"
                 ]
             }
+        ],
+        "work_school": [
+            {
+                "parts": [
+                    "Hi Aneesha, we can start whenever you're ready."
+                ],
+                "role": "model"
+            },
+            {
+                "role": "user",
+                "parts": [
+                    "hi"
+                ],
+                "emotion": "Neutral",
+                "timestamp": "2025-07-01T23:57:36.257692"
+            },
+            {
+                "role": "model",
+                "parts": [
+                    "Hi Aneesha.  It sounds like you're wanting to talk about stress related to work or school.  That can be really challenging. What's been on your mind lately?  Is there a specific situation or feeling you'd like to explore?\n"
+                ]
+            }
+        ],
+        "anxiety": [
+            {
+                "role": "model",
+                "parts": [
+                    "Hi Aneesha, we can start whenever you're ready."
+                ]
+            }
         ]
     }
 }
