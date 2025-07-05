@@ -1,2 +1,5 @@
 .env
 __pycache__
+conversation_log.json
+goals.json
+user_profiles.json
